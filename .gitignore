@@ -12,6 +12,7 @@ artifacts/
 
 # ---- local environment (never committed) ----
 infrastructure/.env
+infrastructure/apisix/generated/
 .env
 *.pfx
 *.p12
@@ -24,3 +25,6 @@ secrets.json
 *.log
 tmp/
 .DS_Store
+
+# ---- python, for the scripts that draw the diagrams ----
+__pycache__/

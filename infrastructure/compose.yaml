@@ -178,6 +178,30 @@ services:
       retries: 20
       start_period: 15s
 
+  # The edge: Apache APISIX ends TLS and routes to the three backends, which run on the host.
+  # Its routes are a file (standalone mode), written by scripts/up.sh from apisix/apisix.template.yaml.
+  apisix:
+    image: apache/apisix:3.18.0-debian
+    <<: *restart
+    environment:
+      APISIX_STAND_ALONE: "true"
+      BACKEND_HOST: ${BACKEND_HOST:-host.docker.internal}
+    volumes:
+      - ./apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
+      - ./apisix/generated/apisix.yaml:/usr/local/apisix/conf/apisix.yaml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "${GATEWAY_HTTPS_PORT:-49443}:9443"
+      - "${GATEWAY_HTTP_PORT:-49080}:9080"
+    healthcheck:
+      # The image has no curl: the listener is asked with the shell alone.
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9080"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
   # ------------------------------------------------------------ observability (profile)
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.116.1

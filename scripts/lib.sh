@@ -42,3 +42,24 @@ env_value() {
 }
 
 compose() { docker compose --env-file "$ENV_FILE" -f "$INFRA_DIR/compose.yaml" "$@"; }
+
+# The edge needs a certificate. One is made for this machine, for the name "localhost", and kept outside
+# the repository's history (infrastructure/apisix/generated is ignored). It is trusted by nobody: a caller
+# names it explicitly (curl --cacert), which is what the scenarios do.
+GATEWAY_DIR="$INFRA_DIR/apisix/generated"
+GATEWAY_CA="$GATEWAY_DIR/localhost.crt"
+ensure_gateway_config() {
+  mkdir -p "$GATEWAY_DIR"
+  if [ ! -s "$GATEWAY_CA" ] || [ ! -s "$GATEWAY_DIR/localhost.key" ]; then
+    openssl req -x509 -newkey rsa:2048 -nodes -days 825 -subj "/CN=localhost" \
+      -addext "subjectAltName=DNS:localhost,IP:127.0.0.1" \
+      -keyout "$GATEWAY_DIR/localhost.key" -out "$GATEWAY_CA" >/dev/null 2>&1
+    echo "made a certificate for the edge: infrastructure/apisix/generated/localhost.crt"
+  fi
+  awk -v cert="$GATEWAY_CA" -v key="$GATEWAY_DIR/localhost.key" '
+    function paste(file,   line) { while ((getline line < file) > 0) print "      " line; close(file) }
+    /^__CERTIFICATE__$/ { paste(cert); next }
+    /^__KEY__$/         { paste(key); next }
+    { print }' "$INFRA_DIR/apisix/apisix.template.yaml" > "$GATEWAY_DIR/apisix.yaml"
+}
+

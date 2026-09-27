@@ -1,38 +1,50 @@
-# Storefront: the MP Core sample
+<div align="center">
+
+# Storefront
+
+**The MP Core sample: an online store you can run, read and take apart.**
+
+Three backends behind a gateway, built with [MP Core](https://github.com/panahister/mpcore).<br>
+Nothing is a mock-up: real tokens, real brokers, real databases, and twenty-one scenarios that prove it.
 
 [![ci](https://github.com/panahister/mpcore-storefront-sample/actions/workflows/ci.yml/badge.svg)](https://github.com/panahister/mpcore-storefront-sample/actions/workflows/ci.yml)
+[![MP Core](https://img.shields.io/nuget/v/MPCore.Domain?label=MP%20Core&color=512bd4)](https://github.com/panahister/mpcore)
 [![licence](https://img.shields.io/badge/licence-Apache--2.0-blue)](LICENSE)
-[![MP Core](https://img.shields.io/badge/MP%20Core-0.9.0-512bd4)](https://github.com/panahister/mpcore)
+[![.NET](https://img.shields.io/badge/.NET-10-512bd4)](global.json)
 
-An online store built with [MP Core](https://github.com/panahister/mpcore), as three backends that work together.
-It exists to show a developer, in running code, how a backend is built on MP Core: where a business rule
-lives, how a module tells another module that something happened, what happens when a request or a message
-arrives twice, and what a failure looks like to the caller.
+[Run it](#run-it) ·
+[Learning path](docs/learning-path.md) ·
+[Architecture](docs/architecture.md) ·
+[The business](docs/business.md) ·
+[What building it taught](docs/lessons.md)
 
-Everything here runs on your machine. Nothing is a mock-up: the backends take real tokens from Keycloak,
-write to PostgreSQL and TimescaleDB, and talk over Kafka, RabbitMQ, REST and gRPC. Only the payment
-provider is simulated.
+</div>
 
-## The system
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/system-dark.svg">
+  <img alt="The Storefront system: Apache APISIX at the edge, three backends built on MP Core, RabbitMQ and Kafka between them, Keycloak, a simulated payment provider and OpenTelemetry" src="docs/images/system-light.svg" width="100%">
+</picture>
 
-```text
-                        shopper, back office                      warehouse staff            analyst
-                               │ REST                                   │ gRPC                  │ REST
-                               ▼                                        ▼                       ▼
-┌────────────────────────────────────────────────┐            ┌──────────────────┐    ┌──────────────────┐
-│ Commerce            modular monolith           │            │ Fulfillment      │    │ Analytics        │
-│ REST :5100  gRPC :5101                         │  RabbitMQ  │ service          │    │ service          │
-│                                                │───────────▶│ gRPC :5201       │    │ REST :5300       │
-│  Catalog ─ Basket ─ Ordering ─ Payments        │ order ready│                  │    │                  │
-│  four modules, one database, a schema each     │◀───────────│ shipments        │    │ sales per hour   │
-│                                                │  shipment  │                  │    │ and per city     │
-│                                                │ dispatched └──────────────────┘    └──────────────────┘
-│                                                │                     │                       ▲
-│                                                │─── Kafka: order placed, paid, cancelled ────┘
-└────────────────────────────────────────────────┘                     │
-        │            │            │                                    │
-   PostgreSQL      Redis       DemoPay (simulated)                PostgreSQL              TimescaleDB
-```
+## Why this sample exists
+
+Most samples show the day everything works. A real backend is judged on the other days: the request
+that arrives twice, the eight checkouts of one basket at the same moment, the payment provider that is
+down, the message that is delivered again after a restart.
+
+Storefront is built for those days. It is small enough to read in a day and complete enough to be true:
+
+| You want to know | Storefront shows it | By running |
+|---|---|---|
+| Where does a business rule live, and what does a caller see when it is broken? | A rule is a named class, checked by the aggregate, answered under its own code, in the caller's language | S3, S13 |
+| How does one module tell another, without sharing a transaction? | A message that commits with the change; the answer to the shopper is "accepted" | S1 |
+| What happens when a request arrives twice? | It runs once, and the second answer is the first | S14 |
+| What happens when eight requests arrive at once? | One order, one charge | S15, S16 |
+| Where does a card token go, and where does it never go? | To Payments, and into no message, queue table or log line | S17 |
+| How do two services work together with no shared code? | Each declares what it reads; a test holds the two together | S18 |
+| How is a stream read by a service that was not there when it was written? | From its start, at its own pace, into a hypertable | S19 |
+| What does a backend believe of the gateway in front of it? | The scheme and the address, if the gateway is trusted. Never who the caller is | S20 |
+
+## What is in it
 
 | Backend | Shape | Transport | Messaging | Storage | Also |
 |---|---|---|---|---|---|
@@ -40,14 +52,41 @@ provider is simulated.
 | [`fulfillment/`](fulfillment) | service | gRPC | RabbitMQ | PostgreSQL | business audit, inbox |
 | [`analytics/`](analytics) | service | REST | Kafka | TimescaleDB hypertable | memory cache, inbox |
 
-The three share no code. Each declares the messages it reads in its own project, and a test holds the
-copies together ([docs/architecture.md](docs/architecture.md), "Contracts between services").
+Around them, each a real product in a container: **Apache APISIX** at the edge, **Keycloak** for identity,
+**Apache Kafka** and **RabbitMQ**, **PostgreSQL**, **TimescaleDB** and **Redis**, and **OpenTelemetry** with
+Jaeger, Prometheus and Grafana. Only the payment provider is simulated.
+
+The three backends share no code. Each declares the messages it reads in its own project, and a test
+holds the copies together.
+
+## One order, from a basket to a parcel
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/order-journey-dark.svg">
+  <img alt="The eight steps of an order across the modules and services, and what MP Core guarantees at each" src="docs/images/order-journey-light.svg" width="100%">
+</picture>
+
+Every box is one transaction that changes one module. Between the boxes there is a message, and each
+message leaves with the change that caused it. The code of the whole journey is business: a rule, a
+decision, a name. What makes it safe is MP Core's, and it is the same in all three backends.
+
+## What the sample's code does, and what MP Core does
+
+| The sample's code | MP Core |
+|---|---|
+| Says that a price may not move by more than half in one change | Reports the broken rule as 422, under the rule's code, with the numbers that broke it, in English or Persian; audits the refused attempt |
+| Empties the basket and announces what it held | Saves both in one commit; releases the message only after it |
+| Marks the checkout endpoint `RequireIdempotencyKey()` | Stores the key and the answer with the change; answers a repeat with the first answer |
+| Declares which exception means "lost a race" | Retries with growing, random pauses; discards the messages of the attempt that failed |
+| Names a role for an endpoint | Validates the token, refuses by default, names the actor in every audit record |
+| Raises `OrderPaid` | Delivers it to Kafka after the commit, partitioned by the order; the reader's inbox stops a second delivery |
+| Nothing | Traces that cross three services, metrics, logs without secrets, health that tells alive from ready |
 
 ## Run it
 
-You need the .NET SDK `10.0.400`, Docker with about 8 GB of memory, `curl` and `jq`. `grpcurl` is needed
-for the two gRPC scenarios. [docs/running.md](docs/running.md) has the details, the addresses you can open
-and the problems people meet.
+You need the .NET SDK `10.0.400`, Docker with about 8 GB of memory, `curl`, `jq` and `openssl`.
+`grpcurl` is needed for the gRPC scenarios. [docs/running.md](docs/running.md) has the details, the
+addresses you can open, and the problems people meet.
 
 ```bash
 git clone https://github.com/panahister/mpcore-storefront-sample.git
@@ -79,14 +118,14 @@ scripts/run.sh fulfillment
 scripts/run.sh analytics
 ```
 
-And the twenty business scenarios, against the running backends:
+And the twenty-one scenarios, against the running system:
 
 ```bash
 scripts/scenarios.sh
 ```
 
-Every step prints what it expects and what it got. The script is a demonstration and an end-to-end test at
-the same time: it exits non-zero when an expectation fails.
+Every step prints what it expects and what it got. The script is a demonstration and an end-to-end test
+at the same time: it exits non-zero when an expectation fails.
 
 ## Learn from it
 
@@ -97,14 +136,21 @@ the same time: it exits non-zero when an expectation fails.
 | Know why the system is cut this way, and what each decision costs | [docs/architecture.md](docs/architecture.md) |
 | Find where a capability of MP Core is used | [docs/mpcore-coverage.md](docs/mpcore-coverage.md) |
 | Know what building this taught, including what went wrong | [docs/lessons.md](docs/lessons.md) |
-| Work here with an AI coding agent | [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md), and the skills in each backend's `.mpcore/skills` |
+| See the whole platform, part by part | [MP Core: reference architecture](https://github.com/panahister/mpcore/blob/main/docs/architecture/reference-architecture.md) |
 | Start a backend of your own | [MP Core: getting started](https://github.com/panahister/mpcore/blob/main/docs/guide/getting-started.md) |
 
 Each backend also carries the guide the MP Core template generated for it (`README.md` and `docs/` inside
 `commerce/`, `fulfillment/` and `analytics/`). Those describe a generated backend in general; the documents
 above describe this system.
 
-## Tests
+## Work here with an AI coding agent
+
+Each backend carries MP Core's ten skills for Claude Code and for Codex, written for that backend's
+choices. [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md) at the root say how the three fit together and
+which rules hold in this repository. The [learning path](docs/learning-path.md) names, for each kind of
+work, the skill an agent uses and a worked example of it here.
+
+## Proved by running it
 
 | What | Command | Needs |
 |---|---|---|
@@ -114,6 +160,10 @@ above describe this system.
 | The contracts between the three | `dotnet test tests/Storefront.Contracts.Tests` | nothing |
 | Every business scenario, end to end | `scripts/scenarios.sh` | the dependencies and the three backends |
 | All of it against packed MP Core packages | `scripts/verify-against-packages.sh` | a clone of MP Core next to this repository |
+
+The tests and the scenarios run on GitHub on every change to this repository.
+[docs/lessons.md](docs/lessons.md) lists what they found: defects in MP Core, which were fixed in MP Core,
+and mistakes in this sample's own design, which are the ones a team is most likely to repeat.
 
 ## Where MP Core comes from
 
@@ -126,7 +176,8 @@ the build output. To choose for one build:
 dotnet build commerce/Storefront.Commerce.Backend.sln -p:MPCoreSource=NuGet
 ```
 
-## Licence
+## Licence and marks
 
 Apache-2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Storefront, DemoPay and the people in the
-scenarios are fictional.
+scenarios are fictional. The names and marks of the products in the pictures belong to their owners and
+are used only to name those products.

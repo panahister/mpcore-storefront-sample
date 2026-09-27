@@ -9,7 +9,7 @@
 #   scripts/scenarios.sh S1 S5      # only these
 #
 # Needs: the Commerce backend running (scripts/run.sh commerce), curl and jq. S18 also needs the Fulfillment
-# backend and S19 the Analytics backend. grpcurl for the gRPC scenarios and docker for a look inside Kafka
+# backend, S19 the Analytics backend, and S20 all three and the edge. grpcurl for the gRPC scenarios and docker for a look inside Kafka
 # and PostgreSQL are optional. A step whose tool or backend is missing is skipped, not failed.
 set -uo pipefail
 
@@ -22,6 +22,11 @@ GRPC_ADDR="${GRPC_ADDR:-localhost:5101}"
 FULFILLMENT_ADDR="${FULFILLMENT_ADDR:-localhost:5201}"
 ANALYTICS_URL="${ANALYTICS_URL:-http://localhost:5300}"
 RABBITMQ_API="${RABBITMQ_API:-http://localhost:$(env_value RABBITMQ_UI_PORT 45673)/api}"
+EDGE_ADDR="${EDGE_ADDR:-localhost:$(env_value GATEWAY_HTTPS_PORT 49443)}"
+EDGE_URL="https://$EDGE_ADDR"
+# The edge's certificate was made for this machine and is trusted by nobody, so every call names it.
+EDGE_CA="${EDGE_CA:-$GATEWAY_CA}"
+ca=(); case "$BASE_URL" in https://*) ca=(--cacert "$EDGE_CA") ;; esac
 psql_in() { # psql_in SERVICE DATABASE SQL  → runs a read-only query in a dependency's container
   compose exec -T "$1" psql -U "$(env_value POSTGRES_USER storefront)" -d "$2" -Atc "$3"
 }
@@ -55,6 +60,8 @@ api() { # api METHOD PATH [TOKEN] [JSON]  → sets STATUS, LAST and REPLAYED ("t
   local method="$1" path="$2" token="${3:-}" body="${4:-}" out headers
   out=$(mktemp); headers=$(mktemp)
   local args=(-s -o "$out" -D "$headers" -w '%{http_code}' -X "$method" "$BASE_URL$path" -H 'Accept: application/json')
+  case "$BASE_URL" in https://*) args+=(--cacert "$EDGE_CA") ;; esac
+  [ -n "${EXTRA_HEADER:-}" ] && args+=(-H "$EXTRA_HEADER")
   [ -n "${LANG_HEADER:-}" ] && args+=(-H "Accept-Language: $LANG_HEADER")
   [ -n "${IDEMPOTENCY_KEY:-}" ] && args+=(-H "Idempotency-Key: $IDEMPOTENCY_KEY")
   [ -n "$token" ] && args+=(-H "Authorization: Bearer $token")
@@ -62,6 +69,8 @@ api() { # api METHOD PATH [TOKEN] [JSON]  → sets STATUS, LAST and REPLAYED ("t
   STATUS=$(curl "${args[@]}")
   LAST=$(cat "$out")
   REPLAYED=$(tr -d '\r' <"$headers" | awk -F': ' 'tolower($1) == "idempotency-replayed" { print tolower($2) }')
+  REQUEST_ID=$(tr -d '\r' <"$headers" | awk -F': ' 'tolower($1) == "x-request-id" { print $2 }')
+  SERVED_BY=$(tr -d '\r' <"$headers" | awk -F': ' 'tolower($1) == "server" { print $2 }')
   rm -f "$out" "$headers"
 }
 
@@ -87,7 +96,8 @@ same_amount() { [ "$(jq -n --argjson a "${1:-null}" --argjson b "${2:-null}" '$a
 # The browser hands the provider's token to Payments first and checks out with the reference it gets
 # back, so the token never travels further (rule P5). Prints the payment intent's identity.
 new_intent() { # new_intent TOKEN PAYMENT_TOKEN
-  curl -s -X POST "$BASE_URL/v1/payments/intents" -H "Authorization: Bearer $1" -H 'Content-Type: application/json' \
+  local trust=(); case "$BASE_URL" in https://*) trust=(--cacert "$EDGE_CA") ;; esac
+  curl -s ${trust[@]+"${trust[@]}"} -X POST "$BASE_URL/v1/payments/intents" -H "Authorization: Bearer $1" -H 'Content-Type: application/json' \
     --data "$(jq -nc --arg t "$2" '{paymentToken:$t}')" | jq -r '.paymentIntentId // empty'
 }
 
@@ -678,6 +688,77 @@ else
 fi
 fi
 
+# ------------------------------------------------------------------------------------ S20
+if selected S20; then
+section "S20 Through the edge: Apache APISIX in front of the three backends"
+edge_grpc() { # edge_grpc BACKEND PROTO TOKEN METHOD JSON  → sets REPLY; the edge does not offer reflection, so the caller brings the contract
+  local auth=(); [ -n "$3" ] && auth=(-H "authorization: Bearer $3")
+  REPLY=$(grpcurl -cacert "$EDGE_CA" -max-time 10 -import-path "$REPO_ROOT/$1/src/Storefront.$(tr '[:lower:]' '[:upper:]' <<<"${1:0:1}")${1:1}.Api/Protos" -proto "$2" \
+    ${auth[@]+"${auth[@]}"} -d "$5" "$EDGE_ADDR" "$4" 2>&1)
+}
+direct_url="$BASE_URL"
+if [ ! -s "$EDGE_CA" ] || [ "$(curl -s -m 5 --cacert "$EDGE_CA" -o /dev/null -w '%{http_code}' "$EDGE_URL/v1/catalog/products?size=1")" != 200 ]; then
+  skip "the edge does not answer at $EDGE_URL (scripts/up.sh starts it; on Linux run the backends with STOREFRONT_BIND=0.0.0.0)"
+else
+  BASE_URL="$EDGE_URL"
+  SARA20=$(token_for sara); NORA20=$(token_for nora); WAREHOUSE20=$(warehouse_token)
+
+  api GET "/v1/catalog/products?size=1"
+  expect 200 "anybody browses the catalog over TLS, through the edge"
+  case "$SERVED_BY" in APISIX*) ok "answered by $SERVED_BY" ;; *) bad "answered by '$SERVED_BY', expected APISIX" ;; esac
+
+  api GET /v1/basket
+  expect 401 "a basket without a token, through the edge: the backend decides, not the edge"
+  [ -n "$REQUEST_ID" ] && check "$(jq -r '.requestId' <<<"$LAST")" "$REQUEST_ID" "the request's identity in the backend's answer, as the edge gave it" \
+    || bad "the edge gave the request no identity"
+
+  api GET /openapi/v1.json
+  if [ "$STATUS" = 200 ]; then
+    check "$(jq -r '.servers[0].url' <<<"$LAST")" "$EDGE_URL/" "the address the backend believes it is reached at (X-Forwarded-Proto and -Host, from a trusted proxy)"
+  else
+    skip "the API description is off (it is served in Development only)"
+  fi
+
+  api GET /v1/basket "$SARA20"; expect 200 "sara reads her basket through the edge"
+  EXTRA_HEADER="X-Forwarded-User: ali" api GET /v1/backoffice/orders "$SARA20"
+  expect 403 "sara in the back office, with a header that says she is ali"
+
+  BASE_URL="$EDGE_URL" api GET /v1/analytics/sales/hourly "$NORA20"
+  expect 200 "nora reads the figures through the same door: another backend"
+
+  fill_basket "$SARA20" CKG-SHL-STV 1
+  checkout "$SARA20" tok_visa_ok "$BASKET_TOTAL" "Sara Ahmadi" Geneva
+  expect 202 "sara buys a stove through the edge"
+  wait_for "$ORDER_ID" "$SARA20" Paid >/dev/null && ok "paid" || bad "order at $ORDER_STATUS"
+
+  if ! command -v grpcurl >/dev/null; then
+    skip "grpcurl is not installed (brew install grpcurl)"
+  else
+    edge_grpc fulfillment storefront_fulfillment.proto "$WAREHOUSE20" storefront.fulfillment.v1.Shipments/GetShipment "{\"order_id\":\"$ORDER_ID\"}"
+    deadline=$((SECONDS + WAIT_SECONDS))
+    until [ "$(jq -r '.status // empty' <<<"$REPLY" 2>/dev/null)" = Pending ] || [ $SECONDS -ge $deadline ]; do
+      sleep 0.5; edge_grpc fulfillment storefront_fulfillment.proto "$WAREHOUSE20" storefront.fulfillment.v1.Shipments/GetShipment "{\"order_id\":\"$ORDER_ID\"}"
+    done
+    check "$(jq -r '.status // empty' <<<"$REPLY" 2>/dev/null)" Pending "the warehouse's shipment, asked over gRPC through the edge"
+    edge_grpc commerce storefront_commerce.proto "$WAREHOUSE20" storefront.commerce.v1.Fulfillment/ListOrdersToShip '{"page":1,"size":1}'
+    jq -e '.orders | length >= 1' <<<"$REPLY" >/dev/null 2>&1 && ok "Commerce's gRPC service through the same door" || bad "Commerce's gRPC service through the edge → $REPLY"
+    edge_grpc fulfillment storefront_fulfillment.proto "" storefront.fulfillment.v1.Shipments/ListShipments '{}'
+    grep -q Unauthenticated <<<"$REPLY" && ok "gRPC without a token → Unauthenticated" || bad "gRPC without a token → $REPLY"
+  fi
+
+  say "anybody may browse, so anybody can be asked to slow down: fifty requests at once"
+  limited=0
+  for _ in $(seq 1 50); do
+    [ "$(curl -s -m 5 --cacert "$EDGE_CA" -o /dev/null -w '%{http_code}' "$EDGE_URL/v1/catalog/products?size=1")" = 429 ] && limited=$((limited + 1))
+  done
+  [ "$limited" -gt 0 ] && ok "the edge answered 429 to $limited of 50" || bad "the edge limited nothing"
+  BASE_URL="$direct_url" api GET "/v1/catalog/products?size=1"
+  expect 200 "the backend itself, asked directly at the same moment"
+  empty_basket "$SARA20"
+fi
+BASE_URL="$direct_url"
+fi
+
 # ------------------------------------------------------------------------------------ summary
 section "Summary"
 printf '   %s%d passed%s, %s%d failed%s, %d skipped\n' "$G" "$passed" "$N" "$([ $failed -gt 0 ] && echo "$R")" "$failed" "$N" "$skipped"
@@ -686,6 +767,7 @@ cat <<INFO
      traces     http://localhost:$(env_value JAEGER_UI_PORT 46686)  (one trace crosses the three services: HTTP → handler → SQL → broker → consumer)
      events     http://localhost:$(env_value KAFKA_UI_PORT 48080)  (Kafka topics storefront.*)
      queues     http://localhost:$(env_value RABBITMQ_UI_PORT 45673)  (RabbitMQ queues storefront.*)
+     edge       $EDGE_URL  (Apache APISIX; curl --cacert infrastructure/apisix/generated/localhost.crt)
      metrics    http://localhost:$(env_value GRAFANA_PORT 43000)  (dashboard "Storefront Commerce")
      payments   $WIREMOCK_URL/__admin/requests
 INFO

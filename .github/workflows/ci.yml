@@ -1,4 +1,5 @@
-# Builds and tests the three backends on every push and pull request, against MP Core's source.
+# Builds and tests the three backends on every push and pull request, against MP Core's source, then
+# starts the dependencies and the backends and runs every scenario against them.
 # It publishes nothing and deploys nothing.
 name: ci
 
@@ -16,7 +17,7 @@ on:
       scenarios:
         description: "Also start the dependencies and the backends, and run every scenario"
         type: boolean
-        default: false
+        default: true
 
 permissions:
   contents: read
@@ -62,7 +63,8 @@ jobs:
           path: "**/results.trx"
 
   scenarios:
-    if: github.event_name == 'workflow_dispatch' && inputs.scenarios
+    # On every change; by hand, only when asked for.
+    if: github.event_name != 'workflow_dispatch' || inputs.scenarios
     needs: build-and-test
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -90,7 +92,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/logs"
           for backend in commerce fulfillment analytics; do
-            DOTNET_ARGS="--configuration Release -p:MPCoreSource=$MPCORE_SOURCE" nohup scripts/run.sh "$backend" > "$RUNNER_TEMP/logs/$backend.log" 2>&1 &
+            STOREFRONT_BIND=0.0.0.0 DOTNET_ARGS="--configuration Release -p:MPCoreSource=$MPCORE_SOURCE" nohup scripts/run.sh "$backend" > "$RUNNER_TEMP/logs/$backend.log" 2>&1 &
           done
           for attempt in $(seq 1 90); do
             if curl -sf http://localhost:5100/health/ready > /dev/null \

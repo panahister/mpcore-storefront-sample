@@ -206,6 +206,7 @@ expectation.
 | S17 | Sara pays through a payment intent, then tries it again, then tries Reza's. | The card token stays with Payments: no message and no queue table holds it |
 | S18 | The warehouse service ships Sara's order. | Two services and no shared code: outbox, RabbitMQ, inbox, a gRPC-only host, the answer on a second queue, a token's audience |
 | S19 | Nora reads the figures of an order placed a moment ago. | A Kafka stream read into a TimescaleDB hypertable, a REST-only host, a cached report, a role policy, a validation message in Persian |
+| S20 | Everything again, through the edge. | Apache APISIX in front of the three backends: TLS, REST and gRPC through one door, the request's identity, forwarded headers from a trusted proxy, a forged identity header, a rate limit |
 
 ## 7. API
 
