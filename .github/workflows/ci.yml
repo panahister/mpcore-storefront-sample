@@ -56,7 +56,7 @@ jobs:
           done
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: "**/results.trx"
@@ -107,7 +107,7 @@ jobs:
         run: scripts/scenarios.sh
       - name: Upload the backends' logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-logs
           path: ${{ runner.temp }}/logs
