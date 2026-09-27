@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <!-- Local development settings (connection strings, the local identity provider) are written here by
+         scripts/setup.sh and never into a file in this repository. -->
+    <UserSecretsId>storefront-commerce</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Storefront.Commerce.Infrastructure/Storefront.Commerce.Infrastructure.csproj" />
+    <!-- Each module's Application assembly: for its endpoints and for HandlerAssemblies. Module
+         Infrastructure is reached only through the composition root in Storefront.Commerce.Infrastructure. -->
+    <ProjectReference Include="../Modules/Catalog/Storefront.Commerce.Modules.Catalog/Storefront.Commerce.Modules.Catalog.csproj" />
+    <ProjectReference Include="../Modules/Basket/Storefront.Commerce.Modules.Basket/Storefront.Commerce.Modules.Basket.csproj" />
+    <ProjectReference Include="../Modules/Ordering/Storefront.Commerce.Modules.Ordering/Storefront.Commerce.Modules.Ordering.csproj" />
+    <ProjectReference Include="../Modules/Payments/Storefront.Commerce.Modules.Payments/Storefront.Commerce.Modules.Payments.csproj" />
+    <PackageReference Include="MPCore.Hosting" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Localization" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Validation.FluentValidation" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Messaging.Wolverine" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Security.Abstractions" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Security.AspNetCore" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Tenancy.Abstractions" Version="$(MPCoreVersion)" />
+    <!-- Design-time only: `dotnet ef migrations` with this project as the startup project. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.11" PrivateAssets="all" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.83.0" />
+    <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.83.0" />
+    <PackageReference Include="Grpc.AspNetCore.Server.Reflection" Version="2.83.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.83.0" PrivateAssets="all" />
+    <PackageReference Include="MPCore.Transport.Grpc" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Transport.Http" Version="$(MPCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.2.3" />
+    <PackageReference Include="MPCore.Observability.Prometheus" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Messaging.Wolverine.Kafka" Version="$(MPCoreVersion)" />
+    <!-- The work queues to and from the warehouse; see Hosting/CommerceQueues.cs. -->
+    <PackageReference Include="MPCore.Messaging.Wolverine.RabbitMQ" Version="$(MPCoreVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Protobuf Include="Protos/platform_probe.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos/storefront_commerce.proto" GrpcServices="Server" />
+  </ItemGroup>
+</Project>

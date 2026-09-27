@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The Catalog's published language: everything another module may know about it, and nothing else. -->
+</Project>

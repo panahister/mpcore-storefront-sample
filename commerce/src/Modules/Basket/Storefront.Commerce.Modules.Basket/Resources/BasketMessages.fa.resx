@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="basket.buyer_required" xml:space="preserve">
+    <value>برای استفاده از سبد خرید وارد شوید.</value>
+  </data>
+  <data name="basket.product_not_found" xml:space="preserve">
+    <value>محصولی با کد {sku} وجود ندارد.</value>
+  </data>
+  <data name="basket.quantity_out_of_range" xml:space="preserve">
+    <value>هر ردیف سبد بین {min} تا {max} عدد می‌پذیرد.</value>
+  </data>
+  <data name="basket.too_many_lines" xml:space="preserve">
+    <value>سبد حداکثر {max} محصول مختلف می‌پذیرد.</value>
+  </data>
+  <data name="basket.product_not_sellable" xml:space="preserve">
+    <value>محصول {sku} قابل فروش نیست.</value>
+  </data>
+  <data name="basket.empty" xml:space="preserve">
+    <value>سبد خرید شما خالی است.</value>
+  </data>
+  <data name="basket.total_changed" xml:space="preserve">
+    <value>قیمت‌های سبد خرید شما تغییر کرده است. لطفاً پیش از پرداخت سبد را دوباره بررسی کنید.</value>
+  </data>
+  <data name="basket.phone_invalid" xml:space="preserve">
+    <value>شماره‌ی تلفن باید به قالب بین‌المللی باشد: علامت +، کد کشور و شماره.</value>
+  </data>
+  <data name="basket.postal_code_invalid" xml:space="preserve">
+    <value>کد پستی باید ۳ تا ۱۲ حرف و رقم باشد.</value>
+  </data>
+  <data name="basket.payment_intent_unusable" xml:space="preserve">
+    <value>این پرداخت دیگر قابل استفاده نیست. لطفاً کارت خود را دوباره وارد کنید.</value>
+  </data>
+</root>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ordering.buyer_required" xml:space="preserve">
+    <value>Sign in to place or see orders.</value>
+  </data>
+  <data name="ordering.order_not_found" xml:space="preserve">
+    <value>No such order.</value>
+  </data>
+  <data name="ordering.note_required" xml:space="preserve">
+    <value>Support must give a reason for cancelling.</value>
+  </data>
+  <data name="ordering.order_id_invalid" xml:space="preserve">
+    <value>The order identifier is not a valid UUID.</value>
+  </data>
+  <data name="ordering.status_unknown" xml:space="preserve">
+    <value>The status filter is not a known order status.</value>
+  </data>
+  <data name="ordering.no_lines" xml:space="preserve">
+    <value>An order needs at least one line.</value>
+  </data>
+  <data name="ordering.phone_invalid" xml:space="preserve">
+    <value>The phone number must be in international format: a plus sign, the country code and the number.</value>
+  </data>
+  <data name="ordering.postal_code_invalid" xml:space="preserve">
+    <value>The postal code must be 3 to 12 letters and digits.</value>
+  </data>
+  <data name="ordering.already_shipped" xml:space="preserve">
+    <value>The order has already shipped and can no longer be cancelled.</value>
+  </data>
+  <data name="ordering.already_cancelled" xml:space="preserve">
+    <value>The order is already cancelled.</value>
+  </data>
+  <data name="ordering.status_mismatch" xml:space="preserve">
+    <value>This step needs the order to be {expected}; it is {actual}.</value>
+  </data>
+</root>

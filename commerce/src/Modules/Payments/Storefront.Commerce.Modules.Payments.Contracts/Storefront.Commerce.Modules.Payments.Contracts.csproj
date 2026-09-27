@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The Payments module's published language. Ordering drives payments through these types only. -->
+</Project>

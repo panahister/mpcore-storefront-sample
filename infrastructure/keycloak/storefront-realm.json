@@ -1,0 +1,219 @@
+{
+  "realm": "storefront",
+  "displayName": "Storefront (development)",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "accessTokenLifespan": 1800,
+  "roles": {
+    "realm": [
+      {
+        "name": "customer",
+        "description": "Shops: basket, checkout, own orders."
+      },
+      {
+        "name": "catalog-manager",
+        "description": "Lists, prices, restocks and withdraws products."
+      },
+      {
+        "name": "support-agent",
+        "description": "Reads every order, cancels any unshipped order, reads the audit trail."
+      },
+      {
+        "name": "warehouse",
+        "description": "The warehouse system: lists paid orders, reports shipments."
+      },
+      {
+        "name": "analyst",
+        "description": "Reads sales figures from the Analytics service."
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "storefront-web",
+      "name": "Storefront web shop (development)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "storefront-commerce-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "storefront-commerce-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "storefront-analytics-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "storefront-analytics-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "storefront-warehouse",
+      "name": "Storefront warehouse system (development)",
+      "enabled": true,
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "lab-only-warehouse-secret",
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true,
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "storefront-commerce-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "storefront-commerce-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "storefront-fulfillment-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.custom.audience": "storefront-fulfillment-api",
+            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "introspection.token.claim": "true"
+          }
+        }
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "basic",
+        "email",
+        "service_account"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "sara",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Sara",
+      "lastName": "Ahmadi",
+      "email": "sara@storefront.example",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "sara-lab",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-storefront",
+        "customer"
+      ]
+    },
+    {
+      "username": "reza",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Reza",
+      "lastName": "Karimi",
+      "email": "reza@storefront.example",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "reza-lab",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-storefront",
+        "customer"
+      ]
+    },
+    {
+      "username": "mina",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Mina",
+      "lastName": "Rahimi",
+      "email": "mina@storefront.example",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "mina-lab",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-storefront",
+        "catalog-manager"
+      ]
+    },
+    {
+      "username": "ali",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Ali",
+      "lastName": "Moradi",
+      "email": "ali@storefront.example",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "ali-lab",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-storefront",
+        "support-agent"
+      ]
+    },
+    {
+      "username": "service-account-storefront-warehouse",
+      "enabled": true,
+      "serviceAccountClientId": "storefront-warehouse",
+      "realmRoles": [
+        "default-roles-storefront",
+        "warehouse"
+      ]
+    },
+    {
+      "username": "nora",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Nora",
+      "lastName": "Analyst",
+      "email": "nora@storefront.example",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "nora-lab",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-storefront",
+        "analyst"
+      ]
+    }
+  ]
+}

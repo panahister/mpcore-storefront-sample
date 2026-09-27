@@ -1,0 +1,113 @@
+# Builds and tests the three backends on every push and pull request, against MP Core's source.
+# It publishes nothing and deploys nothing.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      mpcore_source:
+        description: "Where MP Core comes from: Local (its repository's main branch) or NuGet (nuget.org)"
+        type: choice
+        options: [Local, NuGet]
+        default: Local
+      scenarios:
+        description: "Also start the dependencies and the backends, and run every scenario"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+  MPCORE_SOURCE: ${{ inputs.mpcore_source || 'Local' }}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: mpcore-storefront-sample
+      # Directory.Build.targets looks for MP Core next to this repository.
+      - uses: actions/checkout@v4
+        if: env.MPCORE_SOURCE == 'Local'
+        with:
+          repository: ${{ github.repository_owner }}/mpcore
+          path: mpcore
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: mpcore-storefront-sample/global.json
+      - name: Build and test (warnings are errors)
+        working-directory: mpcore-storefront-sample
+        run: |
+          for solution in commerce/Storefront.Commerce.Backend.sln fulfillment/Storefront.Fulfillment.Backend.sln analytics/Storefront.Analytics.Backend.sln tests/Storefront.Contracts.Tests/Storefront.Contracts.Tests.csproj; do
+            dotnet build "$solution" --configuration Release -p:MPCoreSource=$MPCORE_SOURCE
+            dotnet test "$solution" --configuration Release --no-build -p:MPCoreSource=$MPCORE_SOURCE --logger "trx;LogFileName=results.trx"
+          done
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: "**/results.trx"
+
+  scenarios:
+    if: github.event_name == 'workflow_dispatch' && inputs.scenarios
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: mpcore-storefront-sample
+      - uses: actions/checkout@v4
+        if: env.MPCORE_SOURCE == 'Local'
+        with:
+          repository: ${{ github.repository_owner }}/mpcore
+          path: mpcore
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: mpcore-storefront-sample/global.json
+      - name: Install grpcurl
+        run: |
+          curl -sSL https://github.com/fullstorydev/grpcurl/releases/download/v1.9.3/grpcurl_1.9.3_linux_x86_64.tar.gz | tar -xz -C "$RUNNER_TEMP" grpcurl
+          sudo install "$RUNNER_TEMP/grpcurl" /usr/local/bin/grpcurl
+      - name: Start the dependencies
+        working-directory: mpcore-storefront-sample
+        run: scripts/up.sh --no-observability && scripts/setup.sh
+      - name: Start the backends
+        working-directory: mpcore-storefront-sample
+        run: |
+          mkdir -p "$RUNNER_TEMP/logs"
+          for backend in commerce fulfillment analytics; do
+            DOTNET_ARGS="--configuration Release -p:MPCoreSource=$MPCORE_SOURCE" nohup scripts/run.sh "$backend" > "$RUNNER_TEMP/logs/$backend.log" 2>&1 &
+          done
+          for attempt in $(seq 1 90); do
+            if curl -sf http://localhost:5100/health/ready > /dev/null \
+              && curl -sf http://localhost:5300/health/ready > /dev/null \
+              && grpcurl -plaintext localhost:5201 grpc.health.v1.Health/Check | grep -q SERVING; then
+              exit 0
+            fi
+            sleep 5
+          done
+          tail -50 "$RUNNER_TEMP"/logs/*.log
+          exit 1
+      - name: Run every scenario
+        working-directory: mpcore-storefront-sample
+        run: scripts/scenarios.sh
+      - name: Upload the backends' logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-logs
+          path: ${{ runner.temp }}/logs

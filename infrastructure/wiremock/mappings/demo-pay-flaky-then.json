@@ -1,0 +1,36 @@
+{
+  "name": "flaky-then",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/demo-pay/v1/authorizations",
+    "headers": {
+      "Idempotency-Key": {
+        "matches": ".+"
+      },
+      "X-Merchant-Id": {
+        "equalTo": "STOREFRONT-01"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.paymentToken == 'tok_flaky')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "transformers": [
+      "response-template"
+    ],
+    "jsonBody": {
+      "status": "APPROVED",
+      "reference": "SPH-{{randomValue length=10 type='ALPHANUMERIC' uppercase=true}}"
+    }
+  },
+  "scenarioName": "demo-pay-flaky",
+  "requiredScenarioState": "recovered"
+}

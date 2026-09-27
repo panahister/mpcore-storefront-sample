@@ -1,0 +1,31 @@
+{
+  "name": "decline-limit",
+  "priority": 2,
+  "request": {
+    "method": "POST",
+    "urlPath": "/demo-pay/v1/authorizations",
+    "headers": {
+      "Idempotency-Key": {
+        "matches": ".+"
+      },
+      "X-Merchant-Id": {
+        "equalTo": "STOREFRONT-01"
+      }
+    },
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.amount > 500000000)]"
+      }
+    ]
+  },
+  "response": {
+    "status": 402,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "jsonBody": {
+      "status": "DECLINED",
+      "code": "LIMIT_EXCEEDED"
+    }
+  }
+}
