@@ -5,7 +5,7 @@
 **The MP Core sample: an online store you can run, read and take apart.**
 
 Three backends behind a gateway, built with [MP Core](https://github.com/panahister/mpcore).<br>
-Nothing is a mock-up: real tokens, real brokers, real databases, and twenty-one scenarios that prove it.
+Nothing is a mock-up: real tokens, real brokers, real databases, and twenty-two scenarios that prove it.
 
 [![ci](https://github.com/panahister/mpcore-storefront-sample/actions/workflows/ci.yml/badge.svg)](https://github.com/panahister/mpcore-storefront-sample/actions/workflows/ci.yml)
 [![MP Core](https://img.shields.io/nuget/v/MPCore.Domain?label=MP%20Core&color=512bd4)](https://github.com/panahister/mpcore)
@@ -16,6 +16,7 @@ Nothing is a mock-up: real tokens, real brokers, real databases, and twenty-one 
 [Learning path](docs/learning-path.md) ·
 [Architecture](docs/architecture.md) ·
 [The business](docs/business.md) ·
+[Variations](docs/variations.md) ·
 [What building it taught](docs/lessons.md)
 
 </div>
@@ -43,6 +44,7 @@ Storefront is built for those days. It is small enough to read in a day and comp
 | How do two services work together with no shared code? | Each declares what it reads; a test holds the two together | S18 |
 | How is a stream read by a service that was not there when it was written? | From its start, at its own pace, into a hypertable | S19 |
 | What does a backend believe of the gateway in front of it? | The scheme and the address, if the gateway is trusted. Never who the caller is | S20 |
+| If the gateway verifies tokens, may the backend stop? | No. The edge cannot know for which backend a token was issued, or what its holder may do | S21 |
 
 ## What is in it
 
@@ -118,7 +120,7 @@ scripts/run.sh fulfillment
 scripts/run.sh analytics
 ```
 
-And the twenty-one scenarios, against the running system:
+And the twenty-two scenarios, against the running system:
 
 ```bash
 scripts/scenarios.sh
@@ -126,6 +128,19 @@ scripts/scenarios.sh
 
 Every step prints what it expects and what it got. The script is a demonstration and an end-to-end test
 at the same time: it exits non-zero when an expectation fails.
+
+## One branch, and switches
+
+Everything is on `main`, and everything on `main` runs on every change. What you choose is a switch:
+
+| You want | Switch | Default |
+|---|---|---|
+| The edge to verify tokens with Keycloak, as a second wall | `EDGE_AUTH=keycloak scripts/up.sh` | `off` |
+| MP Core from nuget.org, or from a clone next to this repository | `-p:MPCoreSource=NuGet` or `Local` | decided by what is there |
+| A lighter run, without the observability stack | `scripts/up.sh --no-observability` | with |
+
+[docs/variations.md](docs/variations.md) says what each changes, what it does not, and which scenario
+proves it.
 
 ## Learn from it
 
@@ -136,6 +151,7 @@ at the same time: it exits non-zero when an expectation fails.
 | Know why the system is cut this way, and what each decision costs | [docs/architecture.md](docs/architecture.md) |
 | Find where a capability of MP Core is used | [docs/mpcore-coverage.md](docs/mpcore-coverage.md) |
 | Know what building this taught, including what went wrong | [docs/lessons.md](docs/lessons.md) |
+| Choose a variation | [docs/variations.md](docs/variations.md) |
 | See the whole platform, part by part | [MP Core: reference architecture](https://github.com/panahister/mpcore/blob/main/docs/architecture/reference-architecture.md) |
 | Start a backend of your own | [MP Core: getting started](https://github.com/panahister/mpcore/blob/main/docs/guide/getting-started.md) |
 

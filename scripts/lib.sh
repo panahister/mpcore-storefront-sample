@@ -33,6 +33,8 @@ ensure_env() {
 # Reads a variable from infrastructure/.env, falling back to .env.example, then to a default.
 env_value() {
   local key="$1" default="$2" value=""
+  # What the caller's environment says wins: EDGE_AUTH=keycloak scripts/up.sh
+  if [ -n "${!key:-}" ]; then printf '%s' "${!key}"; return; fi
   for f in "$ENV_FILE" "$ENV_EXAMPLE"; do
     [ -f "$f" ] || continue
     value=$(grep -E "^${key}=" "$f" | tail -1 | cut -d= -f2-)
@@ -56,10 +58,14 @@ ensure_gateway_config() {
       -keyout "$GATEWAY_DIR/localhost.key" -out "$GATEWAY_CA" >/dev/null 2>&1
     echo "made a certificate for the edge: infrastructure/apisix/generated/localhost.crt"
   fi
-  awk -v cert="$GATEWAY_CA" -v key="$GATEWAY_DIR/localhost.key" '
-    function paste(file,   line) { while ((getline line < file) > 0) print "      " line; close(file) }
-    /^__CERTIFICATE__$/ { paste(cert); next }
-    /^__KEY__$/         { paste(key); next }
+  local auth; auth="$(env_value EDGE_AUTH off)"
+  [ -f "$INFRA_DIR/apisix/edge-auth.$auth.yaml" ] || { echo "EDGE_AUTH=$auth: there is no infrastructure/apisix/edge-auth.$auth.yaml (off, keycloak)" >&2; return 2; }
+  awk -v cert="$GATEWAY_CA" -v key="$GATEWAY_DIR/localhost.key" -v auth="$INFRA_DIR/apisix/edge-auth.$auth.yaml" '
+    function paste(file, margin,   line) { while ((getline line < file) > 0) if (line !~ /^#/) print margin line; close(file) }
+    /^__CERTIFICATE__$/ { paste(cert, "      "); next }
+    /^__KEY__$/         { paste(key, "      "); next }
+    /^__EDGE_AUTH__$/   { paste(auth, "      "); next }
     { print }' "$INFRA_DIR/apisix/apisix.template.yaml" > "$GATEWAY_DIR/apisix.yaml"
+  echo "the edge: EDGE_AUTH=$auth"
 }
 

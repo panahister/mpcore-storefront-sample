@@ -108,6 +108,19 @@
         "email",
         "service_account"
       ]
+    },
+    {
+      "clientId": "storefront-edge",
+      "name": "Storefront edge (Apache APISIX)",
+      "description": "The gateway. It verifies the signature of a token with the realm's public keys; it signs nobody in and asks for no token.",
+      "enabled": true,
+      "publicClient": false,
+      "secret": "lab-only-edge-secret",
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "protocol": "openid-connect"
     }
   ],
   "users": [

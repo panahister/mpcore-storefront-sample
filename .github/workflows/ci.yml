@@ -68,6 +68,11 @@ jobs:
     needs: build-and-test
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        # The edge passes tokens on, or verifies them as well (docs/variations.md).
+        edge_auth: [off, keycloak]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -86,7 +91,7 @@ jobs:
           sudo install "$RUNNER_TEMP/grpcurl" /usr/local/bin/grpcurl
       - name: Start the dependencies
         working-directory: mpcore-storefront-sample
-        run: scripts/up.sh --no-observability && scripts/setup.sh
+        run: EDGE_AUTH=${{ matrix.edge_auth }} scripts/up.sh --no-observability && scripts/setup.sh
       - name: Start the backends
         working-directory: mpcore-storefront-sample
         run: |
@@ -111,5 +116,5 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: backend-logs
+          name: backend-logs-${{ matrix.edge_auth }}
           path: ${{ runner.temp }}/logs

@@ -35,7 +35,7 @@
 <rect x="60" y="201.0" width="26" height="26" rx="6.24" fill="#e8433e" stroke="none" stroke-width="1.25"/>
 <text x="73.0" y="218.16" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" font-size="10.92" font-weight="700" fill="#ffffff" text-anchor="middle">AX</text>
 <text x="96" y="212" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" font-size="13" font-weight="700" fill="#1f2328" text-anchor="start">Apache APISIX</text>
-<text x="96" y="229.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" font-size="11.3" font-weight="400" fill="#57606a" text-anchor="start">One door for the three: ends TLS, routes REST and gRPC, names every request, limits anonymous browsing</text>
+<text x="96" y="229.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" font-size="11.3" font-weight="400" fill="#57606a" text-anchor="start">Ends TLS, routes REST and gRPC, names every request; by a switch, verifies tokens with Keycloak</text>
 <circle cx="677" cy="203" r="5" fill="#16a34a"/>
 <path d="M 674.6 203.2 L 676.4 205 L 679.6 201.2" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M 370.0 254 L 370.0 282" fill="none" stroke="#8c959f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -126,6 +126,8 @@
 <text x="788" y="229.0" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" font-size="11.3" font-weight="400" fill="#57606a" text-anchor="start">One audience per backend</text>
 <circle cx="941" cy="203" r="5" fill="#16a34a"/>
 <path d="M 938.6 203.2 L 940.4 205 L 943.6 201.2" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M 710 214 L 726 214" fill="none" stroke="#8c959f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4"/>
+<path d="M 719.7 217.0 L 726 214 L 719.7 211.0" fill="none" stroke="#8c959f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M 710 330 L 768 330 L 768 256" fill="none" stroke="#8c959f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="5 4"/>
 <path d="M 771.0 262.3 L 768 256 L 765.0 262.3" fill="none" stroke="#8c959f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 <text x="778" y="324" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#57606a" text-anchor="start">every backend validates</text>
@@ -168,5 +170,5 @@
 <text x="740" y="668" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" font-size="10.5" font-weight="400" fill="#57606a" text-anchor="start">One trace crosses the three backends</text>
 <circle cx="40" cy="708" r="5" fill="#16a34a"/>
 <path d="M 37.6 708.2 L 39.4 710 L 42.6 706.2" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-<text x="52" y="712" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#57606a" text-anchor="start">Run end to end by the 21 scenarios of scripts/scenarios.sh</text>
+<text x="52" y="712" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif" font-size="11.5" font-weight="400" fill="#57606a" text-anchor="start">Run end to end by the 22 scenarios of scripts/scenarios.sh</text>
 </svg>

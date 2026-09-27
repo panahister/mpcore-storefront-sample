@@ -118,6 +118,11 @@ routes are one file, [`infrastructure/apisix/apisix.template.yaml`](../infrastru
 | Limits how often one address may browse the catalog without a token | Nothing: this is the edge's job |
 | Passes the bearer token on | Validate it, each for itself, on every request |
 
+**A second wall, by a switch.** With `EDGE_AUTH=keycloak` the edge verifies a token's signature with
+Keycloak's keys and answers 401 itself; the backends verify as before, because the edge cannot know for
+which backend a token was issued or what its holder may do. [variations.md](variations.md) has the
+details, and scenario S21 the proof.
+
 **The edge is never the only wall.** It does not decide who a caller is. A header that says so
 (`X-Forwarded-User` and its relatives) is removed by the backend before authentication, whoever sent it.
 A gateway that validates tokens as well is one more boundary, never a replacement (MP Core ADR-007).
@@ -185,8 +190,6 @@ and its handler there are spans of one trace, because the trace context travels 
   tenant.
 - **A module that changes another through a call that writes.** Section 2 says why.
 - **A schema registry, or a contract in Avro or Protobuf on the broker.** The messages are JSON.
-- **Token validation at the edge.** APISIX passes the token on and the backends validate it. Validating
-  at the edge as well is possible and adds a wall; it removes none.
 - **Deployment.** There is no container image, chart or pipeline that deploys. MP Core generates none, on
   purpose: how a backend is deployed belongs to the platform it runs on.
 - **A saga with a deadline.** The order process answers when a step is given up, but has no timer.
