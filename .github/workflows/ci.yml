@@ -44,7 +44,7 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/mpcore
           path: mpcore
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: mpcore-storefront-sample/global.json
       - name: Build and test (warnings are errors)
@@ -75,7 +75,7 @@ jobs:
         with:
           repository: ${{ github.repository_owner }}/mpcore
           path: mpcore
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v6
         with:
           global-json-file: mpcore-storefront-sample/global.json
       - name: Install grpcurl
