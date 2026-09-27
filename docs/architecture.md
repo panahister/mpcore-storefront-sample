@@ -1,5 +1,10 @@
 # Architecture
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/system-dark.svg">
+  <img alt="The Storefront system: Apache APISIX at the edge, three backends built on MP Core, RabbitMQ and Kafka between them, Keycloak, a simulated payment provider and OpenTelemetry" src="images/system-light.svg" width="100%">
+</picture>
+
 Why Storefront is cut into these three backends, how they talk, and what each decision costs. Every
 convention names where it comes from, so that you can read the source and disagree with it.
 
@@ -99,7 +104,33 @@ test is a Pact; here it is a unit test. A reader's copy that ignores properties 
 A version is part of the channel's name (`.v1`). A change that breaks a reader is a new contract on a new
 channel, published next to the old one until its last reader has moved.
 
-## 5. Transports
+## 5. The edge
+
+Callers reach the three backends through one door: Apache APISIX, in a container, in standalone mode. Its
+routes are one file, [`infrastructure/apisix/apisix.template.yaml`](../infrastructure/apisix/apisix.template.yaml).
+
+| The edge does | The backends do |
+|---|---|
+| Ends TLS | Speak cleartext behind it: HTTP/1.1 for REST, HTTP/2 for gRPC |
+| Routes by path: `/v1/analytics/*` to Analytics, `/v1/*` to Commerce, a gRPC service to the backend that owns it | Bind every endpoint to its listener, so a gRPC method cannot be reached on a REST port |
+| Gives every request an identity (`X-Request-Id`) | Use that identity, and return it in every answer and every failure |
+| Forwards the scheme, the host and the caller's address | Believe them from a trusted proxy only (`Gateway:TrustedProxies`) |
+| Limits how often one address may browse the catalog without a token | Nothing: this is the edge's job |
+| Passes the bearer token on | Validate it, each for itself, on every request |
+
+**The edge is never the only wall.** It does not decide who a caller is. A header that says so
+(`X-Forwarded-User` and its relatives) is removed by the backend before authentication, whoever sent it.
+A gateway that validates tokens as well is one more boundary, never a replacement (MP Core ADR-007).
+
+The edge does not offer gRPC reflection or the health probes. A gRPC client brings the contract, which is
+in each backend's `Protos` folder; the probes are for the platform, inside.
+
+Another gateway can stand where APISIX stands. What it has to do is in the left column, and none of it is
+specific to a product. MP Core's
+[reference architecture](https://github.com/panahister/mpcore/blob/main/docs/architecture/reference-architecture.md)
+says which products were run and which only fit.
+
+## 6. Transports
 
 | Backend | REST | gRPC | Why |
 |---|---|---|---|
@@ -115,7 +146,7 @@ Health has two questions on both transports: alive (the process answers) and rea
 answers). `Hosting/HostHealthChecks.cs` in each backend says what is asked; the distinction is Kubernetes'
 liveness and readiness probes.
 
-## 6. Security
+## 7. Security
 
 One Keycloak realm, `storefront`. Every backend is an OAuth 2.0 resource server with its own **audience**:
 a token names the services it may be shown to, and a service refuses a token that does not name it.
@@ -130,7 +161,7 @@ endpoints are the health probes, the catalog pages and, in Development, the desc
 (`Hosting/*Policies.cs`). What a caller may see of another's data is a business decision and lives in the
 application layer (`OrderAccess`): another shopper's order is "not found", never "forbidden".
 
-## 7. When something fails
+## 8. When something fails
 
 | What fails | What happens | Where to see it |
 |---|---|---|
@@ -141,19 +172,21 @@ application layer (`OrderAccess`): another shopper's order is "not found", never
 | The payment provider is down | the HTTP client retries, then the message is redelivered with a cooldown; the order stays "awaiting payment" | scenarios S6, S7 |
 | A business rule is broken by a queued message | it is never retried: the answer would be the same | MP Core |
 
-## 8. Observability
+## 9. Observability
 
 Every backend sends logs, metrics and traces over OTLP to one OpenTelemetry Collector. A trace crosses the
 services: the checkout request, the handlers of the order process, the SQL, the message to the warehouse
 and its handler there are spans of one trace, because the trace context travels in the message headers
 (W3C Trace Context). Open Jaeger after a scenario run and look for a trace that names three services.
 
-## 9. What this sample does not show
+## 10. What this sample does not show
 
 - **Multi-tenancy.** Every backend reads a tenant from the token when there is one; Storefront has one
   tenant.
 - **A module that changes another through a call that writes.** Section 2 says why.
 - **A schema registry, or a contract in Avro or Protobuf on the broker.** The messages are JSON.
+- **Token validation at the edge.** APISIX passes the token on and the backends validate it. Validating
+  at the edge as well is possible and adds a wall; it removes none.
 - **Deployment.** There is no container image, chart or pipeline that deploys. MP Core generates none, on
   purpose: how a backend is deployed belongs to the platform it runs on.
 - **A saga with a deadline.** The order process answers when a step is given up, but has no timer.

@@ -52,7 +52,7 @@ added with one package reference and one call, `options.UseMPCoreRabbitMq(...)`,
 | `MPCore.Audit.Abstractions` | `IBusinessAuditRecorder`, `AuditPolicy`, `IAuditQuery` | Commerce `Catalog/Application/Commands/ChangeProductPrice.cs`, `/v1/backoffice/audit`; Fulfillment `Application/Commands/DispatchShipment.cs`; `Infrastructure/Audit/AuditPolicyConfiguration.cs` in both |
 | `MPCore.Audit.EntityFrameworkCore.PostgreSql` | `AddMPCoreAudit`, `UseMPCoreAudit`, `ApplyMPCoreAudit` | Commerce and Fulfillment `Infrastructure/DependencyInjection.cs` |
 | `MPCore.Security.Abstractions` | `ICurrentActorAccessor`, `CurrentActor.HasRole`, `SystemActorScope` | Commerce `Basket/Application/Commands/Checkout.cs`, `Ordering/Application/OrderAccess.cs`, `Api/Hosting/DevelopmentSetup.cs` |
-| `MPCore.Security.AspNetCore` | the bearer resource server, Keycloak claim mapping, default-deny authorization, policy contributors | `Api/Program.cs`; `Api/Hosting/StorefrontPolicies.cs`, `FulfillmentPolicies.cs`, `AnalyticsPolicies.cs` |
+| `MPCore.Security.AspNetCore` | the bearer resource server, Keycloak claim mapping, default-deny authorization, policy contributors, forwarded headers from trusted proxies, the guard against forged identity headers | `Api/Program.cs`; `Api/Hosting/StorefrontPolicies.cs`, `FulfillmentPolicies.cs`, `AnalyticsPolicies.cs` |
 | `MPCore.Transport.Http` | `ToHttpResult`, Problem Details, `Accept-Language`, `RequireIdempotencyKey` | Commerce `Api/Rest/Endpoints/StorefrontEndpoints.cs`; Analytics `Api/Rest/Endpoints/SalesEndpoints.cs` |
 | `MPCore.Transport.Grpc` | a failure as a rich gRPC status | Commerce `Api/Grpc/Services/CommerceGrpcServices.cs`; Fulfillment `Api/Grpc/Services/ShipmentsService.cs` |
 | `MPCore.Resilience.Http` | `AddMPCoreResilientHttpClient`: timeouts, retries, a circuit breaker | Commerce `Payments/Infrastructure/PaymentsModule.cs` |
@@ -86,6 +86,7 @@ it.
 | A secret stays where it belongs | S17 | no queue table holds a card token |
 | Two services with no shared code; a token's audience | S18 | RabbitMQ's management page; Jaeger: a trace that names two services |
 | A time series in a hypertable; a cached report | S19 | `timescaledb_information.hypertables`; `Application/Queries/SalesReports.cs` |
+| A backend behind a gateway: what it believes, and what it does not | S20 | the API description names the edge's address; a forged `X-Forwarded-User` changes nothing; `Api/Program.cs`, `UseMPCoreGatewayForwarding` |
 | Alive and ready are two questions | none: stop PostgreSQL and ask | `/health/live` stays `Healthy`, `/health/ready` answers 503; over gRPC, service `live` and the empty service name |
 
 ## 4. What is not shown

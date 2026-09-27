@@ -1,0 +1,95 @@
+# The routes of the edge. scripts/up.sh writes generated/apisix.yaml from this file, with a certificate it
+# makes for this machine. Change this file, not the generated one.
+#
+# What the edge does, and what it leaves to the backends:
+#
+#   * it ends TLS. Behind it the backends speak cleartext: HTTP/1.1 for REST, HTTP/2 for gRPC;
+#   * it routes by path to one of three backends, REST and gRPC through the same door;
+#   * it gives every request an identity, which the backend uses in its logs and in its answers;
+#   * it limits how often one address may browse the catalog without a token.
+#
+# It does not decide who a caller is. It passes the bearer token on, and every backend validates it for
+# itself on every request: a gateway that validates as well is one more wall, never the only one
+# (MP Core ADR-007).
+
+upstreams:
+  - id: commerce-rest
+    type: roundrobin
+    scheme: http
+    nodes:
+      "${{BACKEND_HOST}}:5100": 1
+  - id: commerce-grpc
+    type: roundrobin
+    scheme: grpc
+    nodes:
+      "${{BACKEND_HOST}}:5101": 1
+  - id: fulfillment-grpc
+    type: roundrobin
+    scheme: grpc
+    nodes:
+      "${{BACKEND_HOST}}:5201": 1
+  - id: analytics-rest
+    type: roundrobin
+    scheme: http
+    nodes:
+      "${{BACKEND_HOST}}:5300": 1
+
+global_rules:
+  - id: request-identity
+    plugins:
+      request-id:
+        header_name: X-Request-Id
+        include_in_response: true
+
+routes:
+  # Anybody may browse, so anybody can be asked to slow down.
+  - id: catalog-browse
+    uri: /v1/catalog/products*
+    methods: [GET]
+    priority: 20
+    upstream_id: commerce-rest
+    plugins:
+      limit-count:
+        count: 40
+        time_window: 10
+        key_type: var
+        key: remote_addr
+        rejected_code: 429
+        policy: local
+
+  - id: analytics
+    uri: /v1/analytics/*
+    priority: 10
+    upstream_id: analytics-rest
+
+  - id: commerce
+    uri: /v1/*
+    priority: 0
+    upstream_id: commerce-rest
+
+  # The description of Commerce's API. The backend serves it in Development only; elsewhere this route
+  # answers what the backend answers, which is that a token is required.
+  - id: commerce-description
+    uri: /openapi/*
+    methods: [GET]
+    upstream_id: commerce-rest
+
+  # A gRPC method is a path: /<package>.<Service>/<Method>.
+  - id: commerce-grpc
+    uris:
+      - /storefront.commerce.v1.Catalog/*
+      - /storefront.commerce.v1.Fulfillment/*
+    upstream_id: commerce-grpc
+
+  - id: fulfillment-grpc
+    uri: /storefront.fulfillment.v1.Shipments/*
+    upstream_id: fulfillment-grpc
+
+ssls:
+  - id: this-machine
+    snis: ["localhost"]
+    cert: |
+__CERTIFICATE__
+    key: |
+__KEY__
+#END
