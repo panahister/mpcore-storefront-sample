@@ -1,0 +1,229 @@
+diff --git a/analytics/src/Storefront.Analytics.Api/Rest/Endpoints/SalesEndpoints.cs b/analytics/src/Storefront.Analytics.Api/Rest/Endpoints/SalesEndpoints.cs
+index ff2e8c1..c7f092c 100644
+--- a/analytics/src/Storefront.Analytics.Api/Rest/Endpoints/SalesEndpoints.cs
++++ b/analytics/src/Storefront.Analytics.Api/Rest/Endpoints/SalesEndpoints.cs
+@@ -27,6 +27,11 @@ public static class SalesEndpoints
+                 .ToHttpResult(Results.Ok))
+             .WithName("GetSalesByRegion");
+ 
++        sales.MapGet("/cancellations", static async (DateTimeOffset? from, DateTimeOffset? to, IMessageBus bus, CancellationToken ct) =>
++                (await bus.InvokeAsync<Result<SalesReport<CancellationsByReason>>>(new GetCancellationsByReason(from, to), ct).ConfigureAwait(false))
++                .ToHttpResult(Results.Ok))
++            .WithName("GetCancellationsByReason");
++
+         return sales;
+     }
+ }
+diff --git a/analytics/src/Storefront.Analytics.Application/Ports/ISalesReadModel.cs b/analytics/src/Storefront.Analytics.Application/Ports/ISalesReadModel.cs
+index 2124898..1caa8a3 100644
+--- a/analytics/src/Storefront.Analytics.Application/Ports/ISalesReadModel.cs
++++ b/analytics/src/Storefront.Analytics.Application/Ports/ISalesReadModel.cs
+@@ -10,4 +10,7 @@ public interface ISalesReadModel
+ 
+     /// <summary>Orders placed and their value, per region, city and currency, largest first.</summary>
+     Task<IReadOnlyList<RegionalSales>> ByRegionAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken);
++
++    /// <summary>Orders cancelled, per reason, largest first, then by reason.</summary>
++    Task<IReadOnlyList<CancellationsByReason>> CancellationsAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken);
+ }
+diff --git a/analytics/src/Storefront.Analytics.Application/Queries/SalesReports.cs b/analytics/src/Storefront.Analytics.Application/Queries/SalesReports.cs
+index 286fdef..2b447d4 100644
+--- a/analytics/src/Storefront.Analytics.Application/Queries/SalesReports.cs
++++ b/analytics/src/Storefront.Analytics.Application/Queries/SalesReports.cs
+@@ -13,6 +13,9 @@ public sealed record GetHourlySales(DateTimeOffset? From, DateTimeOffset? To) :
+ /// <summary>Orders placed per region and city. Without a period: the last seven days.</summary>
+ public sealed record GetSalesByRegion(DateTimeOffset? From, DateTimeOffset? To) : IQuery<Result<SalesReport<RegionalSales>>>;
+ 
++/// <summary>Orders cancelled per reason. Without a period: the last seven days.</summary>
++public sealed record GetCancellationsByReason(DateTimeOffset? From, DateTimeOffset? To) : IQuery<Result<SalesReport<CancellationsByReason>>>;
++
+ /// <summary>
+ /// A query only reads: it declares no unit of work, publishes nothing, and reads through a read-model port
+ /// that returns views. It is the only thing an HTTP <c>GET</c> sends (RFC 9110 requires <c>GET</c> to be safe).
+@@ -70,6 +73,26 @@ public static class SalesReportsHandler
+         return Result<SalesReport<RegionalSales>>.Success(new SalesReport<RegionalSales>(from, to, rows));
+     }
+ 
++    public static async Task<Result<SalesReport<CancellationsByReason>>> Handle(
++        GetCancellationsByReason query, ISalesReadModel sales, IReadThroughCache cache, IClock clock, CancellationToken cancellationToken)
++    {
++        ArgumentNullException.ThrowIfNull(query);
++        ArgumentNullException.ThrowIfNull(cache);
++        var period = Period(query.From, query.To, TimeSpan.FromDays(7), clock.UtcNow);
++        if (period.IsFailure)
++        {
++            return Result<SalesReport<CancellationsByReason>>.FromFailure(period.FailureDescriptor!);
++        }
++
++        var (from, to) = period.Value;
++        var rows = await cache.GetOrCreateAsync(
++            CacheKey("cancellations", from, to),
++            async ct => await sales.CancellationsAsync(from, to, ct).ConfigureAwait(false),
++            ReportLifetime,
++            cancellationToken).ConfigureAwait(false);
++        return Result<SalesReport<CancellationsByReason>>.Success(new SalesReport<CancellationsByReason>(from, to, rows));
++    }
++
+     /// <summary>
+     /// The period a report covers, in whole minutes: what was asked for, or the default that ends with the
+     /// minute that has begun.
+diff --git a/analytics/src/Storefront.Analytics.Application/Views/SalesViews.cs b/analytics/src/Storefront.Analytics.Application/Views/SalesViews.cs
+index 81ff372..1705dee 100644
+--- a/analytics/src/Storefront.Analytics.Application/Views/SalesViews.cs
++++ b/analytics/src/Storefront.Analytics.Application/Views/SalesViews.cs
+@@ -6,5 +6,8 @@ public sealed record HourlySales(DateTimeOffset Hour, string Currency, long Paid
+ /// <summary>The orders placed for one city.</summary>
+ public sealed record RegionalSales(string Region, string City, string Currency, long PlacedOrders, long Items, decimal Value);
+ 
++/// <summary>The orders cancelled for one reason. A cancellation that gave none is counted under <c>UNKNOWN</c>.</summary>
++public sealed record CancellationsByReason(string Reason, long CancelledOrders);
++
+ /// <summary>A report and the period it covers.</summary>
+ public sealed record SalesReport<TRow>(DateTimeOffset From, DateTimeOffset To, IReadOnlyList<TRow> Rows);
+diff --git a/analytics/src/Storefront.Analytics.Infrastructure/Persistence/SalesReadModel.cs b/analytics/src/Storefront.Analytics.Infrastructure/Persistence/SalesReadModel.cs
+index 9770632..541f3f1 100644
+--- a/analytics/src/Storefront.Analytics.Infrastructure/Persistence/SalesReadModel.cs
++++ b/analytics/src/Storefront.Analytics.Infrastructure/Persistence/SalesReadModel.cs
+@@ -40,4 +40,15 @@ public sealed class SalesReadModel(AppDbContext database) : ISalesReadModel
+             GROUP BY 1, 2, 3
+             ORDER BY "Value" DESC, 1, 2
+             """).ToListAsync(cancellationToken).ConfigureAwait(false);
++
++    // A reason that is null, empty or only blanks is missing, and is counted under UNKNOWN (A6).
++    public async Task<IReadOnlyList<CancellationsByReason>> CancellationsAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken) =>
++        await database.Database.SqlQuery<CancellationsByReason>($"""
++            SELECT coalesce(nullif(btrim(reason), ''), 'UNKNOWN') AS "Reason",
++                   count(*) AS "CancelledOrders"
++            FROM analytics.order_facts
++            WHERE kind = 'Cancelled' AND occurred_on_utc >= {from} AND occurred_on_utc < {to}
++            GROUP BY 1
++            ORDER BY "CancelledOrders" DESC, 1
++            """).ToListAsync(cancellationToken).ConfigureAwait(false);
+ }
+diff --git a/analytics/tests/Storefront.Analytics.Tests/AnalyticsTests.cs b/analytics/tests/Storefront.Analytics.Tests/AnalyticsTests.cs
+index afce01d..38901f6 100644
+--- a/analytics/tests/Storefront.Analytics.Tests/AnalyticsTests.cs
++++ b/analytics/tests/Storefront.Analytics.Tests/AnalyticsTests.cs
+@@ -77,6 +77,14 @@ public sealed class RecordingSales : ISalesReadModel
+         Asked = (from, to);
+         return Task.FromResult<IReadOnlyList<RegionalSales>>([]);
+     }
++
++    public Task<IReadOnlyList<CancellationsByReason>> CancellationsAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken)
++    {
++        Asked = (from, to);
++        Reads++;
++        return Task.FromResult<IReadOnlyList<CancellationsByReason>>(
++            [new CancellationsByReason("CUSTOMER_REQUEST", 3), new CancellationsByReason("UNKNOWN", 1)]);
++    }
+ }
+ 
+ [Trait("Category", "Unit")]
+@@ -179,6 +187,78 @@ public sealed class SalesReportTests
+     }
+ }
+ 
++[Trait("Category", "Unit")]
++public sealed class CancellationReportTests
++{
++    private static readonly DateTimeOffset Now = new(2026, 9, 27, 10, 0, 0, TimeSpan.Zero);
++
++    [Fact]
++    public async Task Without_a_period_the_cancellation_report_covers_the_last_seven_days()
++    {
++        var sales = new RecordingSales();
++
++        var report = await SalesReportsHandler.Handle(new GetCancellationsByReason(null, null), sales, new FakeCache(), new FakeClock(Now), CancellationToken.None);
++
++        Assert.Equal((Now.AddMinutes(1).AddDays(-7), Now.AddMinutes(1)), sales.Asked);
++        Assert.Equal((Now.AddMinutes(1).AddDays(-7), Now.AddMinutes(1)), (report.Value.From, report.Value.To));
++    }
++
++    [Fact]
++    public async Task The_rows_are_the_read_models_in_its_order()
++    {
++        var sales = new RecordingSales();
++
++        var report = await SalesReportsHandler.Handle(new GetCancellationsByReason(null, null), sales, new FakeCache(), new FakeClock(Now), CancellationToken.None);
++
++        Assert.Equal(
++            [("CUSTOMER_REQUEST", 3L), ("UNKNOWN", 1L)],
++            report.Value.Rows.Select(static r => (r.Reason, r.CancelledOrders)));
++    }
++
++    [Fact]
++    public async Task The_same_report_asked_for_a_moment_later_is_not_read_again()
++    {
++        var sales = new RecordingSales();
++        var cache = new FakeCache();
++        var clock = new FakeClock(Now.AddSeconds(5));
++
++        await SalesReportsHandler.Handle(new GetCancellationsByReason(null, null), sales, cache, clock, CancellationToken.None);
++        clock.UtcNow = Now.AddSeconds(40);
++        await SalesReportsHandler.Handle(new GetCancellationsByReason(null, null), sales, cache, clock, CancellationToken.None);
++
++        Assert.Equal(1, sales.Reads);
++        Assert.Equal("analytics:sales:cancellations:202609201001:202609271001", Assert.Single(cache.Keys));
++    }
++
++    [Fact]
++    public async Task A_period_is_counted_in_whole_minutes()
++    {
++        var sales = new RecordingSales();
++
++        await SalesReportsHandler.Handle(
++            new GetCancellationsByReason(Now.AddHours(-2).AddSeconds(30), Now.AddSeconds(59)), sales, new FakeCache(), new FakeClock(Now), CancellationToken.None);
++
++        Assert.Equal((Now.AddHours(-2), Now), sales.Asked);
++    }
++
++    [Theory]
++    [InlineData("2026-09-27T10:00:00Z", "2026-09-27T09:00:00Z", "PERIOD_INVALID")]
++    [InlineData("2026-09-27T10:00:00Z", "2026-09-27T10:00:00Z", "PERIOD_INVALID")]
++    [InlineData("2026-08-01T00:00:00Z", "2026-09-27T10:00:00Z", "PERIOD_TOO_LONG")]
++    public async Task A_period_that_makes_no_sense_is_refused_before_anything_is_read(string from, string to, string rule)
++    {
++        var sales = new RecordingSales();
++
++        var report = await SalesReportsHandler.Handle(
++            new GetCancellationsByReason(DateTimeOffset.Parse(from, System.Globalization.CultureInfo.InvariantCulture), DateTimeOffset.Parse(to, System.Globalization.CultureInfo.InvariantCulture)),
++            sales, new FakeCache(), new FakeClock(Now), CancellationToken.None);
++
++        var violation = Assert.IsType<MPCore.Application.Results.ValidationFailureDetail>(Assert.Single(report.FailureDescriptor!.Details)).Violations.Single();
++        Assert.Equal(rule, violation.RuleCode);
++        Assert.Null(sales.Asked);
++    }
++}
++
+ [Trait("Category", "Architecture")]
+ public sealed class ArchitectureTests
+ {
+diff --git a/docs/business.md b/docs/business.md
+index 7034590..3beac03 100644
+--- a/docs/business.md
++++ b/docs/business.md
+@@ -351,6 +351,7 @@ added. They live in a TimescaleDB hypertable, cut into one chunk per day.
+ | A3 | Without a period, the hourly report covers the last 24 hours and the regional report the last 7 days. | `SalesReportsHandler` |
+ | A4 | A report is counted in whole minutes and may be up to five seconds old. | `SalesReportsHandler.CacheKey`, `ReportLifetime` |
+ | A5 | Revenue is what was paid; an order that was placed and not paid counts as placed only. | `Infrastructure/Persistence/SalesReadModel.cs` |
++| A6 | The cancellation report counts the orders cancelled in the period, per reason, largest first and then by reason. A cancellation whose reason is missing is counted under `UNKNOWN`. Without a period, it covers the last 7 days. | `SalesReportsHandler`; `Infrastructure/Persistence/SalesReadModel.cs` (`CancellationsAsync`) |
+ 
+ REST (`http://localhost:5300`), role `analyst`:
+ 
+@@ -358,6 +359,7 @@ REST (`http://localhost:5300`), role `analyst`:
+ |---|---|
+ | `GET /v1/analytics/sales/hourly` | Paid orders and revenue per hour: `from`, `to` |
+ | `GET /v1/analytics/sales/by-region` | Orders placed per region and city: `from`, `to` |
++| `GET /v1/analytics/sales/cancellations` | Orders cancelled per reason: `from`, `to` |
+ 
+ ```
+ analytics/src/
+@@ -365,7 +367,7 @@ analytics/src/
+   Storefront.Analytics.Application/
+     Contracts/OrderEvents.cs               this service's copies of the three order events
+     Events/OrderEventsHandler.cs           an event becomes a fact
+-    Queries/SalesReports.cs                the two reports
++    Queries/SalesReports.cs                the three reports
+   Storefront.Analytics.Infrastructure/
+     Persistence/SalesReadModel.cs          time_bucket over the hypertable
+     Migrations/                            the hypertable is created in the first migration

@@ -13,6 +13,7 @@ Nothing is a mock-up: real tokens, real brokers, real databases, and twenty-two 
 [![.NET](https://img.shields.io/badge/.NET-10-512bd4)](global.json)
 
 [Run it](#run-it) ·
+[**Build with AI agents**](docs/building-with-ai-agents.md) ·
 [Learning path](docs/learning-path.md) ·
 [Architecture](docs/architecture.md) ·
 [The business](docs/business.md) ·
@@ -25,6 +26,19 @@ Nothing is a mock-up: real tokens, real brokers, real databases, and twenty-two 
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/system-dark.svg">
   <img alt="The Storefront system: Apache APISIX at the edge, three backends built on MP Core, RabbitMQ and Kafka between them, Keycloak, a simulated payment provider and OpenTelemetry" src="docs/images/system-light.svg" width="100%">
 </picture>
+
+## Built with AI coding agents, and built for them
+
+> **One task was given to Claude Code and to Codex, each with MP Core's skill and nothing else.**
+> Both changed the same seven files, kept the architecture without being reminded, and said what they
+> had not proved. [**Read the run, as it happened**](docs/building-with-ai-agents.md).
+
+| | |
+|---|---|
+| Ten skills at the root, ten in every backend | for Claude Code (`.claude/skills`) and for Codex (`.agents/skills`), checked with both |
+| What to type, for each skill | [docs/building-with-ai-agents.md](docs/building-with-ai-agents.md), section 5 |
+| The task, both answers and both changes, unedited | [docs/agent-runs/2026-09-27](docs/agent-runs/2026-09-27) |
+| The rules an agent holds to in this repository | [AGENTS.md](AGENTS.md), [CLAUDE.md](CLAUDE.md) |
 
 ## Why this sample exists
 
@@ -40,6 +54,8 @@ Storefront is built for those days. It is small enough to read in a day and comp
 | How does one module tell another, without sharing a transaction? | A message that commits with the change; the answer to the shopper is "accepted" | S1 |
 | What happens when a request arrives twice? | It runs once, and the second answer is the first | S14 |
 | What happens when eight requests arrive at once? | One order, one charge | S15, S16 |
+| Who changed this price, and who tried and was refused? | An audit trail in the backend's own database, written in the commit of the change; a refused attempt is kept | S3 |
+| Can a message be read in the caller's language, and changed without a release? | A key and its arguments become a text when it is shown; support edits a text while the backend runs | S13 |
 | Where does a card token go, and where does it never go? | To Payments, and into no message, queue table or log line | S17 |
 | How do two services work together with no shared code? | Each declares what it reads; a test holds the two together | S18 |
 | How is a stream read by a service that was not there when it was written? | From its start, at its own pace, into a hypertable | S19 |
@@ -147,6 +163,7 @@ proves it.
 | You want to | Read |
 |---|---|
 | Follow a path through the code, one idea at a time | [docs/learning-path.md](docs/learning-path.md) |
+| Build here, or on MP Core, with Claude Code or Codex | [docs/building-with-ai-agents.md](docs/building-with-ai-agents.md) |
 | Know the business: roles, rules, scenarios, API | [docs/business.md](docs/business.md) |
 | Know why the system is cut this way, and what each decision costs | [docs/architecture.md](docs/architecture.md) |
 | Find where a capability of MP Core is used | [docs/mpcore-coverage.md](docs/mpcore-coverage.md) |
@@ -158,13 +175,6 @@ proves it.
 Each backend also carries the guide the MP Core template generated for it (`README.md` and `docs/` inside
 `commerce/`, `fulfillment/` and `analytics/`). Those describe a generated backend in general; the documents
 above describe this system.
-
-## Work here with an AI coding agent
-
-Each backend carries MP Core's ten skills for Claude Code and for Codex, written for that backend's
-choices. [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md) at the root say how the three fit together and
-which rules hold in this repository. The [learning path](docs/learning-path.md) names, for each kind of
-work, the skill an agent uses and a worked example of it here.
 
 ## Proved by running it
 

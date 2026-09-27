@@ -11,8 +11,8 @@ public sealed class PriceMoveMustBeGradual(Price current, Price requested) : Cat
     "PRICE_JUMP_TOO_LARGE", "catalog.price_jump_too_large",
     new Dictionary<string, string>
     {
-        ["current"] = current.Amount.ToString("0", CultureInfo.InvariantCulture),
-        ["requested"] = requested.Amount.ToString("0", CultureInfo.InvariantCulture),
+        ["current"] = current.Amount.ToString("0.00", CultureInfo.InvariantCulture),
+        ["requested"] = requested.Amount.ToString("0.00", CultureInfo.InvariantCulture),
         ["max_move_percent"] = ((int)(Product.MaximumPriceMove * 100)).ToString(CultureInfo.InvariantCulture)
     })
 {

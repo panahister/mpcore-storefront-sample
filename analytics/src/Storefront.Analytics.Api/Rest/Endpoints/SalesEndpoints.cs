@@ -27,6 +27,11 @@ public static class SalesEndpoints
                 .ToHttpResult(Results.Ok))
             .WithName("GetSalesByRegion");
 
+        sales.MapGet("/cancellations", static async (DateTimeOffset? from, DateTimeOffset? to, IMessageBus bus, CancellationToken ct) =>
+                (await bus.InvokeAsync<Result<SalesReport<CancellationsByReason>>>(new GetCancellationsByReason(from, to), ct).ConfigureAwait(false))
+                .ToHttpResult(Results.Ok))
+            .WithName("GetCancellationsByReason");
+
         return sales;
     }
 }

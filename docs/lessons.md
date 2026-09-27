@@ -190,6 +190,24 @@ the change.
 `wolverine-dead-letter-queue`, not to the table `wolverine.wolverine_dead_letters`, where a given-up
 message of a local queue goes. An operator has two places to look.
 
+### An AI agent found no skill at the root of this repository
+
+Each backend carries MP Core's skills, and an agent that is started in a backend's folder finds them.
+Started at the root, Claude Code and Codex both found none: each looks for skills from the folder it is
+started in, and neither looks into the folders below at the start. Nobody had asked the agents.
+
+**Now:** the root has ten skills of its own. Each finds the backend a task belongs to and hands over to
+that backend's skill. Both agents were asked again, and both were then given one real task:
+[building-with-ai-agents.md](building-with-ai-agents.md).
+
+### A price was shown without its cents
+
+A broken rule told the caller "from 485 to 4850" after prices had become dollars and cents: the rule
+still printed whole numbers, and a price of 459.50 would have been shown as 460.
+
+**Now:** the rule prints the amount as it is. It was found by drawing the picture of a message for the
+front page, and comparing it with what the code would print.
+
 ## 4. Still open
 
 Nothing here is a defect that loses data. Each is a limit to know, or a decision MP Core has not taken.
@@ -219,7 +237,7 @@ Measured on 2026-09-27, on one machine (macOS, Apple Silicon), after everything 
 | PostgreSQL and TimescaleDB stopped | alive stayed healthy, ready answered 503 and `NOT_SERVING`, and recovered |
 | Commerce tests | 218 passed |
 | Fulfillment tests | 16 passed |
-| Analytics tests | 12 passed |
+| Analytics tests | 19 passed |
 | Contract tests between the three | 8 passed |
 | The three backends built with warnings as errors, and tested, against the **packed** packages | 0 warnings, 0 errors; every test passed |
 | Scenarios against the running backends, MP Core from source, on empty databases | before the edge existed: 20 scenarios, 124 checks of 124 |

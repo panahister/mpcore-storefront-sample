@@ -13,6 +13,9 @@ public sealed record GetHourlySales(DateTimeOffset? From, DateTimeOffset? To) : 
 /// <summary>Orders placed per region and city. Without a period: the last seven days.</summary>
 public sealed record GetSalesByRegion(DateTimeOffset? From, DateTimeOffset? To) : IQuery<Result<SalesReport<RegionalSales>>>;
 
+/// <summary>Orders cancelled per reason. Without a period: the last seven days.</summary>
+public sealed record GetCancellationsByReason(DateTimeOffset? From, DateTimeOffset? To) : IQuery<Result<SalesReport<CancellationsByReason>>>;
+
 /// <summary>
 /// A query only reads: it declares no unit of work, publishes nothing, and reads through a read-model port
 /// that returns views. It is the only thing an HTTP <c>GET</c> sends (RFC 9110 requires <c>GET</c> to be safe).
@@ -68,6 +71,26 @@ public static class SalesReportsHandler
             ReportLifetime,
             cancellationToken).ConfigureAwait(false);
         return Result<SalesReport<RegionalSales>>.Success(new SalesReport<RegionalSales>(from, to, rows));
+    }
+
+    public static async Task<Result<SalesReport<CancellationsByReason>>> Handle(
+        GetCancellationsByReason query, ISalesReadModel sales, IReadThroughCache cache, IClock clock, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        ArgumentNullException.ThrowIfNull(cache);
+        var period = Period(query.From, query.To, TimeSpan.FromDays(7), clock.UtcNow);
+        if (period.IsFailure)
+        {
+            return Result<SalesReport<CancellationsByReason>>.FromFailure(period.FailureDescriptor!);
+        }
+
+        var (from, to) = period.Value;
+        var rows = await cache.GetOrCreateAsync(
+            CacheKey("cancellations", from, to),
+            async ct => await sales.CancellationsAsync(from, to, ct).ConfigureAwait(false),
+            ReportLifetime,
+            cancellationToken).ConfigureAwait(false);
+        return Result<SalesReport<CancellationsByReason>>.Success(new SalesReport<CancellationsByReason>(from, to, rows));
     }
 
     /// <summary>

@@ -10,4 +10,7 @@ public interface ISalesReadModel
 
     /// <summary>Orders placed and their value, per region, city and currency, largest first.</summary>
     Task<IReadOnlyList<RegionalSales>> ByRegionAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken);
+
+    /// <summary>Orders cancelled, per reason, largest first, then by reason.</summary>
+    Task<IReadOnlyList<CancellationsByReason>> CancellationsAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken);
 }

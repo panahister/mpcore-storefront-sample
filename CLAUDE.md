@@ -17,14 +17,24 @@ the instructions of the backend you are about to change.
 Each backend is a repository of its own in everything but location. It has its own
 `.mpcore/template-manifest.json`, its own skills in `.mpcore/skills`, and its own guides in `docs/`.
 
+## Skills
+
+| Where you were started | The skills you find | What they are |
+|---|---|---|
+| At the root of this repository | ten, named `storefront-...`, in `.claude/skills` | Each finds the backend a task belongs to and hands over to that backend's skill |
+| In a backend's folder | ten, named `mpcore-...`, in `<backend>/.claude/skills` | MP Core's skills, written for that backend's shape, transport and broker |
+
+Either way the procedure is in one place: `<backend>/.mpcore/skills/<name>/SKILL.md`. Read it before
+you act. [docs/building-with-ai-agents.md](docs/building-with-ai-agents.md) shows each skill at work on
+this repository.
+
 ## Start every task this way
 
 1. **Decide which backend the task belongs to**, and read that backend's instructions and manifest. A
    task that needs two backends is two changes and a contract between them.
 2. **Read the rule before the code.** [docs/business.md](docs/business.md) lists every business rule by its
    code and the place it lives. A rule that is not there does not exist: ask, do not invent.
-3. **Select the one skill that fits**, from the backend's `.mpcore/skills/INVENTORY.md`, and read its
-   body. [docs/learning-path.md](docs/learning-path.md) names the skill for each kind of work, with a
+3. **Select the one skill that fits**, and read its body in the backend's `.mpcore/skills`. [docs/learning-path.md](docs/learning-path.md) names the skill for each kind of work, with a
    worked example of it in this repository.
 4. **Change one thing**, in the backend and the module that owns it.
 5. **Prove it.** Run the backend's tests, and the scenarios that touch what you changed

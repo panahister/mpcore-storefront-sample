@@ -6,5 +6,8 @@ public sealed record HourlySales(DateTimeOffset Hour, string Currency, long Paid
 /// <summary>The orders placed for one city.</summary>
 public sealed record RegionalSales(string Region, string City, string Currency, long PlacedOrders, long Items, decimal Value);
 
+/// <summary>The orders cancelled for one reason. A cancellation that gave none is counted under <c>UNKNOWN</c>.</summary>
+public sealed record CancellationsByReason(string Reason, long CancelledOrders);
+
 /// <summary>A report and the period it covers.</summary>
 public sealed record SalesReport<TRow>(DateTimeOffset From, DateTimeOffset To, IReadOnlyList<TRow> Rows);

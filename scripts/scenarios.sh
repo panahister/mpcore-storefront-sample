@@ -680,6 +680,22 @@ else
   [ "$(paid_now)" -ge "$((paid19 + 1))" ] && ok "paid orders in the last day: $paid19 → $(paid_now)" || bad "paid orders in the last day stayed at $(paid_now)"
   show '{rows: [.rows[-2:][] | {hour, currency, paidOrders, revenue}]}'
 
+  cancelled_for() { jq -r --arg r "$1" '[.rows[] | select(.reason == $r) | .cancelledOrders] | add // 0' <<<"$LAST"; }
+  figures /v1/analytics/sales/cancellations "$NORA"; expect 200 "nora reads the cancelled orders per reason"
+  cancelled19=$(cancelled_for CUSTOMER_REQUEST)
+  fill_basket "$SARA19" CKG-SHL-STV 1
+  checkout "$SARA19" tok_visa_ok "$BASKET_TOTAL" "Sara Ahmadi" Reykjavik
+  wait_for "$ORDER_ID" "$SARA19" Paid >/dev/null && ok "sara buys a stove" || bad "order at $ORDER_STATUS"
+  api POST "/v1/orders/$ORDER_ID/cancel" "$SARA19" '{"note":"changed my mind"}'
+  expect 200 "and cancels it"
+  deadline=$((SECONDS + WAIT_SECONDS))
+  while [ $SECONDS -lt $deadline ]; do
+    figures /v1/analytics/sales/cancellations "$NORA"; [ "$(cancelled_for CUSTOMER_REQUEST)" = "$((cancelled19 + 1))" ] && break; sleep 0.5
+  done
+  check "$(cancelled_for CUSTOMER_REQUEST)" $((cancelled19 + 1)) "orders cancelled at the customer's request"
+  check "$(jq -c '[.rows[].cancelledOrders] as $c | $c == ($c | sort | reverse)' <<<"$LAST")" true "the reasons, the most frequent first"
+  show '{rows}'
+
   figures /v1/analytics/sales/hourly "$SARA19"; expect 403 "sara (customer) asks for the figures"
   figures /v1/analytics/sales/hourly; expect 401 "the figures without a token"
   LANG_HEADER=fa figures "/v1/analytics/sales/hourly?from=2026-01-01T00:00:00Z&to=2026-06-01T00:00:00Z" "$NORA"
