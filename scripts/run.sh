@@ -7,6 +7,7 @@
 #
 # MP Core comes from a clone of its repository next to this one (../mpcore) when there is one, and from
 # nuget.org otherwise; see Directory.Build.targets. DOTNET_ARGS passes extra arguments to dotnet run.
+# STOREFRONT_BIND=0.0.0.0 is for Linux, where the edge cannot reach the loopback address.
 set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 [ $# -ge 1 ] || { echo "usage: $0 <${BACKENDS[*]}>"; exit 2; }
@@ -25,6 +26,17 @@ MSG
 fi
 
 export ASPNETCORE_ENVIRONMENT=Development
+
+# The backends listen on the loopback address. The edge runs in a container: Docker Desktop lets it
+# reach that address, Docker on Linux does not. There, STOREFRONT_BIND=0.0.0.0 makes a backend listen
+# where the container can reach it.
+if [ -n "${STOREFRONT_BIND:-}" ]; then
+  case "$1" in
+    commerce)    export Kestrel__Endpoints__Rest__Url="http://$STOREFRONT_BIND:5100" Kestrel__Endpoints__Grpc__Url="http://$STOREFRONT_BIND:5101" ;;
+    fulfillment) export Kestrel__Endpoints__Grpc__Url="http://$STOREFRONT_BIND:5201" ;;
+    analytics)   export Kestrel__Endpoints__Rest__Url="http://$STOREFRONT_BIND:5300" ;;
+  esac
+fi
 
 # The three backends share MP Core's projects when it is built from source, and two builds at the same
 # moment write the same files. So builds take turns; running does not. A turn that was never given back,

@@ -1,6 +1,6 @@
 # A path through the code
 
-Twelve steps, each one idea. A step names what to read, what to run, and what to try yourself. Read them in
+Thirteen steps, each one idea. A step names what to read, what to run, and what to try yourself. Read them in
 order the first time: each builds on the one before. The whole path takes a day.
 
 Paths that start with a module's name are in Commerce, inside that module's one project:
@@ -137,6 +137,17 @@ must be asked and what must not be decided alone.
 | Try | Stop Analytics, run `scripts/scenarios.sh S1`, start Analytics, and ask for the report. |
 | Sources | Hohpe and Woolf, *Publish-Subscribe Channel*; Martin Kleppmann, *Designing Data-Intensive Applications* (a log as the source of derived data) |
 | Skill | `mpcore-configure-messaging` |
+
+## 13. Behind a gateway
+
+| | |
+|---|---|
+| Read | `infrastructure/apisix/apisix.template.yaml`, the routes of the edge; `commerce/src/Storefront.Commerce.Api/Program.cs`, the lines around `UseMPCoreGatewayForwarding`; `Gateway:TrustedProxies` in `appsettings.Development.json` |
+| Run | `scripts/scenarios.sh S20` |
+| See | REST and gRPC of three backends through one door, over TLS. The backend knows the public address from the gateway, and believes it because the gateway is a trusted proxy. It never believes the gateway about who the caller is: the token says that. |
+| Try | Replace the entries of `Gateway:TrustedProxies` with an address that is not the gateway's, start Commerce, and ask `/openapi/v1.json` through the edge. The address it names now begins with `http://`: the backend no longer believes what it is told about the scheme. |
+| Sources | MP Core ADR-007 and ADR-009; NIST SP 800-207 (never trust, always verify) |
+| Skill | `mpcore-apply-security` |
 
 ## And then
 

@@ -7,7 +7,8 @@
 | .NET SDK `10.0.400` | pinned in `global.json` |
 | Docker, with about 8 GB of memory | every dependency runs in a container; the three backends do not |
 | `curl`, `jq`, `uuidgen` | the scenarios |
-| `grpcurl` | scenarios S9 and S18; without it they are skipped |
+| `openssl` | `scripts/up.sh` makes a certificate for the edge, for this machine |
+| `grpcurl` | the gRPC steps of scenarios S9, S18 and S20; without it they are skipped |
 | On a Mac with Apple Silicon: `brew install protobuf grpc`, or Rosetta | the gRPC code generator that ships with .NET is built for Intel |
 
 ## Start
@@ -16,8 +17,8 @@
 scripts/up.sh
 ```
 
-Starts PostgreSQL, TimescaleDB, Kafka, RabbitMQ, Redis, Keycloak, a simulated payment provider (WireMock),
-and the OpenTelemetry Collector with Jaeger, Prometheus and Grafana. The first start downloads the images.
+Starts Apache APISIX, PostgreSQL, TimescaleDB, Kafka, RabbitMQ, Redis, Keycloak, a simulated payment
+provider (WireMock), and the OpenTelemetry Collector with Jaeger, Prometheus and Grafana. The first start downloads the images.
 `scripts/up.sh --no-observability` leaves the last four out.
 
 ```bash
@@ -65,6 +66,7 @@ scripts/down.sh --volumes
 
 | What | Address | Sign-in |
 |---|---|---|
+| **The edge** | https://localhost:49443 | the three backends behind Apache APISIX. Its certificate was made for this machine: `curl --cacert infrastructure/apisix/generated/localhost.crt` |
 | Commerce, its API described | http://localhost:5100/openapi-ui/ | none, in Development |
 | Analytics, its API described | http://localhost:5300/openapi-ui/ | none, in Development |
 | Keycloak | http://localhost:48180 | `admin` / `admin`, realm `storefront` |
@@ -129,6 +131,20 @@ The payment token chooses what the provider does:
 
 Add `Accept-Language: fa` to any request to read its messages in Persian.
 
+## Through the edge
+
+The same calls, over TLS, through Apache APISIX. Only the address changes, and the certificate is named:
+
+```bash
+curl -s --cacert infrastructure/apisix/generated/localhost.crt https://localhost:49443/v1/catalog/products?size=3 | jq
+```
+
+gRPC goes through the same door. The edge offers no reflection, so the caller brings the contract:
+
+```bash
+grpcurl -cacert infrastructure/apisix/generated/localhost.crt -import-path fulfillment/src/Storefront.Fulfillment.Api/Protos -proto storefront_fulfillment.proto -H "authorization: Bearer $WAREHOUSE_TOKEN" -d '{"page":1,"size":5}' localhost:49443 storefront.fulfillment.v1.Shipments/ListShipments
+```
+
 ## Common problems
 
 | What you see | Why, and what to do |
@@ -140,5 +156,7 @@ Add `Accept-Language: fa` to any request to read its messages in Persian.
 | A change to the realm is not picked up | Keycloak imports the realm into an empty database only. Start clean. |
 | Scenario S9 is skipped | `grpcurl` is not installed, or S1 did not run before it. |
 | Scenarios S18 or S19 are skipped | Fulfillment or Analytics is not running. |
+| Scenario S20 is skipped, or the edge answers 502 | The edge cannot reach the backends. On Docker Desktop it reaches the loopback address; on Linux it does not, so start each backend with `STOREFRONT_BIND=0.0.0.0 scripts/run.sh commerce`. |
+| A browser warns about the edge's certificate | It was made by `scripts/up.sh` for this machine and is trusted by nobody. That is intended: name it explicitly, as the scenarios do. |
 | Checkout answers 400 `KEY_REQUIRED` | The request has no `Idempotency-Key` header. |
 | A token is refused with 401 by one backend and accepted by another | A token names the backends it is for. The web client's token is for Commerce and Analytics, the warehouse's for Commerce and Fulfillment. |

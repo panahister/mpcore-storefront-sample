@@ -8,6 +8,7 @@ set -euo pipefail
 source "$(dirname "$0")/lib.sh"
 
 ensure_env
+ensure_gateway_config
 profiles=(--profile observability --profile tools)
 [ "${1:-}" = "--no-observability" ] && profiles=()
 echo "== starting the dependencies"
@@ -20,6 +21,7 @@ The dependencies are up.
   TimescaleDB  localhost:$(env_value TIMESCALE_PORT 45433)   database storefront_analytics
   Kafka        localhost:$(env_value KAFKA_PORT 49092)   browser http://localhost:$(env_value KAFKA_UI_PORT 48080)
   RabbitMQ     localhost:$(env_value RABBITMQ_PORT 45672)   management http://localhost:$(env_value RABBITMQ_UI_PORT 45673)
+  Edge         https://localhost:$(env_value GATEWAY_HTTPS_PORT 49443)   Apache APISIX: REST and gRPC of the three backends, over TLS
   Keycloak     http://localhost:$(env_value KEYCLOAK_PORT 48180)   realm "storefront"
   DemoPay      http://localhost:$(env_value WIREMOCK_PORT 48081)/__admin/requests   (WireMock)
   Jaeger       http://localhost:$(env_value JAEGER_UI_PORT 46686)
