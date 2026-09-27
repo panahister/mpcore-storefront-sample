@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 4,
+  "organization": "Storefront",
+  "component": "Commerce",
+  "productName": "Storefront.Commerce",
+  "shape": "modular-monolith",
+  "messaging": "kafka",
+  "transport": "both",
+  "businessAudit": "postgresql",
+  "cache": "hybrid",
+  "timeseries": "none",
+  "aiTooling": "both",
+  "mpcoreVersion": "0.9.0",
+  "templateVersion": "0.9.0",
+  "cliVersion": "0.9.0",
+  "generatedAtUtc": "2026-09-27T15:41:29.311025+00:00"
+}

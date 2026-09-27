@@ -1,0 +1,98 @@
+// The internal gRPC surface of Storefront Commerce: how other Storefront systems talk to this one.
+//
+// REST serves the storefront and the back office, which are browsers. gRPC serves machines: the
+// warehouse system (use case 2) lists paid orders and reports shipments, and any service can look a
+// product up. Money travels as a decimal string — protobuf has no decimal type, and a double would lose
+// cents on large amounts.
+syntax = "proto3";
+
+option csharp_namespace = "Storefront.Commerce.Api.Grpc";
+
+package storefront.commerce.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// Called by the warehouse system with a client-credentials token carrying the "warehouse" role.
+service Fulfillment {
+  rpc ListOrdersToShip (ListOrdersToShipRequest) returns (ListOrdersToShipResponse);
+  rpc GetOrder (GetOrderRequest) returns (OrderReply);
+  rpc ShipOrder (ShipOrderRequest) returns (OrderReply);
+}
+
+// Called by any authenticated Storefront service.
+service Catalog {
+  rpc GetProduct (GetProductRequest) returns (ProductReply);
+}
+
+message ListOrdersToShipRequest {
+  int32 page = 1;
+  int32 size = 2;
+}
+
+message OrderSummaryMessage {
+  string order_id = 1;
+  string order_number = 2;
+  string total = 3;
+  string currency = 4;
+  int32 item_count = 5;
+  google.protobuf.Timestamp placed_on = 6;
+}
+
+message ListOrdersToShipResponse {
+  repeated OrderSummaryMessage orders = 1;
+  int64 total = 2;
+  int32 page = 3;
+  int32 size = 4;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message ShipOrderRequest {
+  string order_id = 1;
+  string carrier = 2;
+  string tracking_code = 3;
+}
+
+message OrderLineMessage {
+  string sku = 1;
+  string product_name = 2;
+  string unit_price = 3;
+  int32 quantity = 4;
+}
+
+message ShippingAddressMessage {
+  string recipient_name = 1;
+  string phone = 2;
+  string province = 3;
+  string city = 4;
+  string line = 5;
+  string postal_code = 6;
+}
+
+message OrderReply {
+  string order_id = 1;
+  string order_number = 2;
+  string status = 3;
+  repeated OrderLineMessage lines = 4;
+  string total = 5;
+  string currency = 6;
+  ShippingAddressMessage ship_to = 7;
+  string carrier = 8;
+  string tracking_code = 9;
+}
+
+message GetProductRequest {
+  string sku = 1;
+}
+
+message ProductReply {
+  string sku = 1;
+  string name = 2;
+  string price = 3;
+  string currency = 4;
+  int32 available = 5;
+  string status = 6;
+  int32 price_version = 7;
+}

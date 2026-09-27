@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <!-- One reference per bounded-context module, so AppDbContext can apply its mappings. -->
+    <ProjectReference Include="../Modules/Catalog/Storefront.Commerce.Modules.Catalog/Storefront.Commerce.Modules.Catalog.csproj" />
+    <ProjectReference Include="../Modules/Basket/Storefront.Commerce.Modules.Basket/Storefront.Commerce.Modules.Basket.csproj" />
+    <ProjectReference Include="../Modules/Ordering/Storefront.Commerce.Modules.Ordering/Storefront.Commerce.Modules.Ordering.csproj" />
+    <ProjectReference Include="../Modules/Payments/Storefront.Commerce.Modules.Payments/Storefront.Commerce.Modules.Payments.csproj" />
+    <PackageReference Include="MPCore.Caching.Hybrid" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Persistence.EntityFrameworkCore.PostgreSql" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Messaging.Wolverine" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Resilience.Http" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Audit.EntityFrameworkCore.PostgreSql" Version="$(MPCoreVersion)" />
+    <!-- Translations an administrator edits at run time, stored in this context (ADR-012 §5). -->
+    <PackageReference Include="MPCore.Localization.EntityFrameworkCore.PostgreSql" Version="$(MPCoreVersion)" />
+    <!-- Request idempotency (Idempotency-Key) and the consumer inbox, stored in this context (ADR-013). -->
+    <PackageReference Include="MPCore.Idempotency.EntityFrameworkCore.PostgreSql" Version="$(MPCoreVersion)" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+  </ItemGroup>
+</Project>

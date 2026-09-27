@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Storefront.Commerce.Modules.Basket.Contracts/Storefront.Commerce.Modules.Basket.Contracts.csproj" />
+    <!-- The only thing this module knows about the Catalog is its published language. -->
+    <ProjectReference Include="../../Catalog/Storefront.Commerce.Modules.Catalog.Contracts/Storefront.Commerce.Modules.Catalog.Contracts.csproj" />
+    <!-- Checkout asks Payments whether the shopper's payment intent can be used: a read, nothing more. -->
+    <ProjectReference Include="../../Payments/Storefront.Commerce.Modules.Payments.Contracts/Storefront.Commerce.Modules.Payments.Contracts.csproj" />
+    <PackageReference Include="MPCore.Domain" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Application" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Persistence.Abstractions" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Messaging.Abstractions" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Security.Abstractions" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Persistence.EntityFrameworkCore.PostgreSql" Version="$(MPCoreVersion)" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+  </ItemGroup>
+</Project>

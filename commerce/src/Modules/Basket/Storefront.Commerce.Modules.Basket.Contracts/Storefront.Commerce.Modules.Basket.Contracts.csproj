@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The Basket's published language: what Ordering may take from a basket at checkout. -->
+</Project>

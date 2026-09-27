@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    One project per bounded context: Domain, Application and Infrastructure are folders inside it, and
+    the compiler guards the boundary to the other modules. See src/Modules/README.md.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="../Storefront.Commerce.Modules.Catalog.Contracts/Storefront.Commerce.Modules.Catalog.Contracts.csproj" />
+    <PackageReference Include="MPCore.Domain" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Application" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Persistence.Abstractions" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Messaging.Abstractions" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Security.Abstractions" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Audit.Abstractions" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Caching.Abstractions" Version="$(MPCoreVersion)" />
+    <PackageReference Include="MPCore.Persistence.EntityFrameworkCore.PostgreSql" Version="$(MPCoreVersion)" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+  </ItemGroup>
+</Project>

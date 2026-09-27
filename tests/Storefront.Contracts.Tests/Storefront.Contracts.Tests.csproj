@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <!-- Test names read as sentences with underscores. -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The only project in this repository that sees more than one backend. The backends themselves
+         share no assembly; this is where their contracts are held against each other. -->
+    <ProjectReference Include="../../commerce/src/Storefront.Commerce.Api/Storefront.Commerce.Api.csproj" />
+    <ProjectReference Include="../../fulfillment/src/Storefront.Fulfillment.Api/Storefront.Fulfillment.Api.csproj" />
+    <ProjectReference Include="../../analytics/src/Storefront.Analytics.Api/Storefront.Analytics.Api.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="basket.buyer_required" xml:space="preserve">
+    <value>Sign in to use a basket.</value>
+  </data>
+  <data name="basket.product_not_found" xml:space="preserve">
+    <value>No product with SKU {sku} exists.</value>
+  </data>
+  <data name="basket.quantity_out_of_range" xml:space="preserve">
+    <value>A basket line holds between {min} and {max} units.</value>
+  </data>
+  <data name="basket.too_many_lines" xml:space="preserve">
+    <value>A basket holds at most {max} different products.</value>
+  </data>
+  <data name="basket.product_not_sellable" xml:space="preserve">
+    <value>Product {sku} is not for sale.</value>
+  </data>
+  <data name="basket.empty" xml:space="preserve">
+    <value>Your basket is empty.</value>
+  </data>
+  <data name="basket.total_changed" xml:space="preserve">
+    <value>Prices in your basket have changed. Please review the basket before paying.</value>
+  </data>
+  <data name="basket.phone_invalid" xml:space="preserve">
+    <value>The phone number must be in international format: a plus sign, the country code and the number.</value>
+  </data>
+  <data name="basket.postal_code_invalid" xml:space="preserve">
+    <value>The postal code must be 3 to 12 letters and digits.</value>
+  </data>
+  <data name="basket.payment_intent_unusable" xml:space="preserve">
+    <value>This payment can no longer be used. Please enter your card again.</value>
+  </data>
+</root>

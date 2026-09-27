@@ -1,0 +1,78 @@
+// The warehouse's gRPC surface: the work list, one shipment, and the dispatch of a parcel.
+//
+// Called by the warehouse system with a client-credentials token that carries the "warehouse" role. A
+// failure arrives as the native gRPC status with rich error details (google.rpc.ErrorInfo and friends),
+// under the same stable code a REST client would read in Problem Details.
+syntax = "proto3";
+
+option csharp_namespace = "Storefront.Fulfillment.Api.Grpc";
+
+package storefront.fulfillment.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service Shipments {
+  rpc ListShipments (ListShipmentsRequest) returns (ListShipmentsResponse);
+  rpc GetShipment (GetShipmentRequest) returns (ShipmentReply);
+  rpc DispatchShipment (DispatchShipmentRequest) returns (ShipmentReply);
+}
+
+message ListShipmentsRequest {
+  // "Pending", "Dispatched", or empty for both.
+  string status = 1;
+  int32 page = 2;
+  int32 size = 3;
+}
+
+message ShipmentSummaryMessage {
+  string order_id = 1;
+  string order_number = 2;
+  string status = 3;
+  string city = 4;
+  int32 item_count = 5;
+  google.protobuf.Timestamp received_on = 6;
+}
+
+message ListShipmentsResponse {
+  repeated ShipmentSummaryMessage shipments = 1;
+  int64 total = 2;
+  int32 page = 3;
+  int32 size = 4;
+}
+
+message GetShipmentRequest {
+  string order_id = 1;
+}
+
+message DispatchShipmentRequest {
+  string order_id = 1;
+  string carrier = 2;
+  string tracking_code = 3;
+}
+
+message ShipmentLineMessage {
+  string sku = 1;
+  string product_name = 2;
+  int32 quantity = 3;
+}
+
+message DeliveryAddressMessage {
+  string recipient_name = 1;
+  string phone = 2;
+  string province = 3;
+  string city = 4;
+  string line = 5;
+  string postal_code = 6;
+}
+
+message ShipmentReply {
+  string order_id = 1;
+  string order_number = 2;
+  string status = 3;
+  DeliveryAddressMessage ship_to = 4;
+  repeated ShipmentLineMessage lines = 5;
+  string carrier = 6;
+  string tracking_code = 7;
+  google.protobuf.Timestamp received_on = 8;
+  google.protobuf.Timestamp dispatched_on = 9;
+}

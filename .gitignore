@@ -1,0 +1,26 @@
+# ---- .NET ----
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+*.binlog
+.vs/
+.idea/
+.vscode/
+artifacts/
+
+# ---- local environment (never committed) ----
+infrastructure/.env
+.env
+*.pfx
+*.p12
+*.key
+*.pem
+secrets.json
+**/appsettings.*.Local.json
+
+# ---- output ----
+*.log
+tmp/
+.DS_Store

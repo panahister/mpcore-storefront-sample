@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="catalog.product_not_found" xml:space="preserve">
+    <value>No product with SKU {sku} exists.</value>
+  </data>
+  <data name="catalog.sku_taken" xml:space="preserve">
+    <value>A product with SKU {sku} already exists.</value>
+  </data>
+  <data name="catalog.sku_invalid" xml:space="preserve">
+    <value>A SKU is 3 to 32 upper-case letters, digits and hyphens.</value>
+  </data>
+  <data name="catalog.price_not_positive" xml:space="preserve">
+    <value>A price is more than zero.</value>
+  </data>
+  <data name="catalog.price_above_ceiling" xml:space="preserve">
+    <value>A price cannot exceed {ceiling}.</value>
+  </data>
+  <data name="catalog.category_unknown" xml:space="preserve">
+    <value>'{category}' is not one of the store's categories.</value>
+  </data>
+  <data name="catalog.product_discontinued" xml:space="preserve">
+    <value>Product {sku} has been discontinued and can no longer change.</value>
+  </data>
+  <data name="catalog.price_unchanged" xml:space="preserve">
+    <value>The new price is the same as the current price.</value>
+  </data>
+  <data name="catalog.price_jump_too_large" xml:space="preserve">
+    <value>A price may move by at most {max_move_percent}% in one step (from {current} to {requested}).</value>
+  </data>
+  <data name="catalog.quantity_not_positive" xml:space="preserve">
+    <value>The quantity must be a positive number.</value>
+  </data>
+  <data name="catalog.insufficient_stock" xml:space="preserve">
+    <value>Only {available} of {sku} are available; {requested} were requested.</value>
+  </data>
+  <data name="catalog.reservation_mismatch" xml:space="preserve">
+    <value>More of {sku} would be released or shipped than was reserved.</value>
+  </data>
+  <data name="catalog.delivery_reference_reused" xml:space="preserve">
+    <value>Delivery {reference} of {sku} was already received with {received} units, not {requested}.</value>
+  </data>
+  <data name="catalog.price_too_precise" xml:space="preserve">
+    <value>A price has cents and nothing smaller.</value>
+  </data>
+</root>
