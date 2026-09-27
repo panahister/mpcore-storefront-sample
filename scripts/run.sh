@@ -25,4 +25,17 @@ MSG
 fi
 
 export ASPNETCORE_ENVIRONMENT=Development
-exec dotnet run --project "$project" ${DOTNET_ARGS:-}
+
+# The three backends share MP Core's projects when it is built from source, and two builds at the same
+# moment write the same files. So builds take turns; running does not. A turn that was never given back,
+# because its build was killed, is taken over after fifteen minutes.
+turn="${TMPDIR:-/tmp}/storefront-build.turn"
+until mkdir "$turn" 2>/dev/null; do
+  [ -n "$(find "$turn" -maxdepth 0 -mmin +15 2>/dev/null)" ] && rmdir "$turn" 2>/dev/null
+  sleep 1
+done
+trap 'rmdir "$turn" 2>/dev/null' EXIT
+dotnet build "$project" ${DOTNET_ARGS:-}
+rmdir "$turn" 2>/dev/null; trap - EXIT
+
+exec dotnet run --project "$project" --no-build ${DOTNET_ARGS:-}
