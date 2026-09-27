@@ -225,7 +225,7 @@ Measured on 2026-09-27, on one machine (macOS, Apple Silicon), after everything 
 | Scenarios against the running backends, MP Core from source, on empty databases | before the edge existed: 20 scenarios, 124 checks of 124 |
 | 22 scenarios on this machine, the edge verifying tokens (`EDGE_AUTH=keycloak`) | 154 checks of 154, none skipped |
 | The same with the switch off | 140 of 140; S21 skipped, as intended |
-| The scenarios on GitHub Actions (Linux), with the switch off and with it on | CI_BOTH |
+| The scenarios on GitHub Actions (Linux), with the switch off and with it on | off: 139 checks, S21 skipped as intended; on: 153 checks, none skipped. No failure |
 | Traces that name all three services, in Jaeger after a scenario run | found |
 | Card tokens in the queue tables and in the logs after the runs | none |
 
