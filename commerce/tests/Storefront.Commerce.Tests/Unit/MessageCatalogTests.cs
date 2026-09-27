@@ -57,7 +57,7 @@ public sealed partial class MessageCatalogTests
         var message = new FailureMessageDescriptor(broken.Rule.MessageKey, broken.Rule.MessageArguments);
         var catalog = Catalog();
 
-        Assert.Equal("A price may move by at most 50% in one step (from 1000 to 5000).", catalog.Localize(message, CultureInfo.GetCultureInfo("en")));
+        Assert.Equal("A price may move by at most 50% in one step (from 1000.00 to 5000.00).", catalog.Localize(message, CultureInfo.GetCultureInfo("en")));
         Assert.Contains("50٪", catalog.Localize(message, CultureInfo.GetCultureInfo("fa-IR")), StringComparison.Ordinal);
     }
 

@@ -109,7 +109,7 @@ public sealed class ProductTests
         var broken = Assert.Throws<BusinessRuleValidationException>(() => product.ChangePrice(Price.Of(newPrice), Now));
 
         Assert.Equal("PRICE_JUMP_TOO_LARGE", broken.Rule.Code);
-        Assert.Equal(("1000", "50"), (broken.Rule.MessageArguments["current"], broken.Rule.MessageArguments["max_move_percent"]));
+        Assert.Equal(("1000.00", "50"), (broken.Rule.MessageArguments["current"], broken.Rule.MessageArguments["max_move_percent"]));
         Assert.Empty(product.IntegrationEvents);
         Assert.Equal(1_000m, product.Price.Amount);
     }

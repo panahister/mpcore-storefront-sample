@@ -77,6 +77,14 @@ public sealed class RecordingSales : ISalesReadModel
         Asked = (from, to);
         return Task.FromResult<IReadOnlyList<RegionalSales>>([]);
     }
+
+    public Task<IReadOnlyList<CancellationsByReason>> CancellationsAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken)
+    {
+        Asked = (from, to);
+        Reads++;
+        return Task.FromResult<IReadOnlyList<CancellationsByReason>>(
+            [new CancellationsByReason("CUSTOMER_REQUEST", 3), new CancellationsByReason("UNKNOWN", 1)]);
+    }
 }
 
 [Trait("Category", "Unit")]
@@ -171,6 +179,78 @@ public sealed class SalesReportTests
 
         var report = await SalesReportsHandler.Handle(
             new GetSalesByRegion(DateTimeOffset.Parse(from, System.Globalization.CultureInfo.InvariantCulture), DateTimeOffset.Parse(to, System.Globalization.CultureInfo.InvariantCulture)),
+            sales, new FakeCache(), new FakeClock(Now), CancellationToken.None);
+
+        var violation = Assert.IsType<MPCore.Application.Results.ValidationFailureDetail>(Assert.Single(report.FailureDescriptor!.Details)).Violations.Single();
+        Assert.Equal(rule, violation.RuleCode);
+        Assert.Null(sales.Asked);
+    }
+}
+
+[Trait("Category", "Unit")]
+public sealed class CancellationReportTests
+{
+    private static readonly DateTimeOffset Now = new(2026, 9, 27, 10, 0, 0, TimeSpan.Zero);
+
+    [Fact]
+    public async Task Without_a_period_the_cancellation_report_covers_the_last_seven_days()
+    {
+        var sales = new RecordingSales();
+
+        var report = await SalesReportsHandler.Handle(new GetCancellationsByReason(null, null), sales, new FakeCache(), new FakeClock(Now), CancellationToken.None);
+
+        Assert.Equal((Now.AddMinutes(1).AddDays(-7), Now.AddMinutes(1)), sales.Asked);
+        Assert.Equal((Now.AddMinutes(1).AddDays(-7), Now.AddMinutes(1)), (report.Value.From, report.Value.To));
+    }
+
+    [Fact]
+    public async Task The_rows_are_the_read_models_in_its_order()
+    {
+        var sales = new RecordingSales();
+
+        var report = await SalesReportsHandler.Handle(new GetCancellationsByReason(null, null), sales, new FakeCache(), new FakeClock(Now), CancellationToken.None);
+
+        Assert.Equal(
+            [("CUSTOMER_REQUEST", 3L), ("UNKNOWN", 1L)],
+            report.Value.Rows.Select(static r => (r.Reason, r.CancelledOrders)));
+    }
+
+    [Fact]
+    public async Task The_same_report_asked_for_a_moment_later_is_not_read_again()
+    {
+        var sales = new RecordingSales();
+        var cache = new FakeCache();
+        var clock = new FakeClock(Now.AddSeconds(5));
+
+        await SalesReportsHandler.Handle(new GetCancellationsByReason(null, null), sales, cache, clock, CancellationToken.None);
+        clock.UtcNow = Now.AddSeconds(40);
+        await SalesReportsHandler.Handle(new GetCancellationsByReason(null, null), sales, cache, clock, CancellationToken.None);
+
+        Assert.Equal(1, sales.Reads);
+        Assert.Equal("analytics:sales:cancellations:202609201001:202609271001", Assert.Single(cache.Keys));
+    }
+
+    [Fact]
+    public async Task A_period_is_counted_in_whole_minutes()
+    {
+        var sales = new RecordingSales();
+
+        await SalesReportsHandler.Handle(
+            new GetCancellationsByReason(Now.AddHours(-2).AddSeconds(30), Now.AddSeconds(59)), sales, new FakeCache(), new FakeClock(Now), CancellationToken.None);
+
+        Assert.Equal((Now.AddHours(-2), Now), sales.Asked);
+    }
+
+    [Theory]
+    [InlineData("2026-09-27T10:00:00Z", "2026-09-27T09:00:00Z", "PERIOD_INVALID")]
+    [InlineData("2026-09-27T10:00:00Z", "2026-09-27T10:00:00Z", "PERIOD_INVALID")]
+    [InlineData("2026-08-01T00:00:00Z", "2026-09-27T10:00:00Z", "PERIOD_TOO_LONG")]
+    public async Task A_period_that_makes_no_sense_is_refused_before_anything_is_read(string from, string to, string rule)
+    {
+        var sales = new RecordingSales();
+
+        var report = await SalesReportsHandler.Handle(
+            new GetCancellationsByReason(DateTimeOffset.Parse(from, System.Globalization.CultureInfo.InvariantCulture), DateTimeOffset.Parse(to, System.Globalization.CultureInfo.InvariantCulture)),
             sales, new FakeCache(), new FakeClock(Now), CancellationToken.None);
 
         var violation = Assert.IsType<MPCore.Application.Results.ValidationFailureDetail>(Assert.Single(report.FailureDescriptor!.Details)).Violations.Single();

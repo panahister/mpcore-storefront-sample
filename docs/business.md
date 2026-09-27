@@ -351,6 +351,7 @@ added. They live in a TimescaleDB hypertable, cut into one chunk per day.
 | A3 | Without a period, the hourly report covers the last 24 hours and the regional report the last 7 days. | `SalesReportsHandler` |
 | A4 | A report is counted in whole minutes and may be up to five seconds old. | `SalesReportsHandler.CacheKey`, `ReportLifetime` |
 | A5 | Revenue is what was paid; an order that was placed and not paid counts as placed only. | `Infrastructure/Persistence/SalesReadModel.cs` |
+| A6 | The cancellation report counts the orders cancelled in the period, per reason, largest first and then by reason. A cancellation whose reason is missing is counted under `UNKNOWN`. Without a period, it covers the last 7 days. | `SalesReportsHandler`; `Infrastructure/Persistence/SalesReadModel.cs` (`CancellationsAsync`) |
 
 REST (`http://localhost:5300`), role `analyst`:
 
@@ -358,6 +359,7 @@ REST (`http://localhost:5300`), role `analyst`:
 |---|---|
 | `GET /v1/analytics/sales/hourly` | Paid orders and revenue per hour: `from`, `to` |
 | `GET /v1/analytics/sales/by-region` | Orders placed per region and city: `from`, `to` |
+| `GET /v1/analytics/sales/cancellations` | Orders cancelled per reason: `from`, `to` |
 
 ```
 analytics/src/
@@ -365,7 +367,7 @@ analytics/src/
   Storefront.Analytics.Application/
     Contracts/OrderEvents.cs               this service's copies of the three order events
     Events/OrderEventsHandler.cs           an event becomes a fact
-    Queries/SalesReports.cs                the two reports
+    Queries/SalesReports.cs                the three reports
   Storefront.Analytics.Infrastructure/
     Persistence/SalesReadModel.cs          time_bucket over the hypertable
     Migrations/                            the hypertable is created in the first migration

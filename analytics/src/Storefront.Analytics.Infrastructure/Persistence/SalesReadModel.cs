@@ -40,4 +40,15 @@ public sealed class SalesReadModel(AppDbContext database) : ISalesReadModel
             GROUP BY 1, 2, 3
             ORDER BY "Value" DESC, 1, 2
             """).ToListAsync(cancellationToken).ConfigureAwait(false);
+
+    // A reason that is null, empty or only blanks is missing, and is counted under UNKNOWN (A6).
+    public async Task<IReadOnlyList<CancellationsByReason>> CancellationsAsync(DateTimeOffset from, DateTimeOffset to, CancellationToken cancellationToken) =>
+        await database.Database.SqlQuery<CancellationsByReason>($"""
+            SELECT coalesce(nullif(btrim(reason), ''), 'UNKNOWN') AS "Reason",
+                   count(*) AS "CancelledOrders"
+            FROM analytics.order_facts
+            WHERE kind = 'Cancelled' AND occurred_on_utc >= {from} AND occurred_on_utc < {to}
+            GROUP BY 1
+            ORDER BY "CancelledOrders" DESC, 1
+            """).ToListAsync(cancellationToken).ConfigureAwait(false);
 }
