@@ -37,7 +37,7 @@ def system(d):
 
     d.group(L, 168, LW, 84, "rose", "EDGE")
     d.tool(L + 16, 188, LW - 32, 52, "apisix", "Apache APISIX",
-           ["One door for the three: ends TLS, routes REST and gRPC, names every request, limits anonymous browsing"], "run")
+           ["Ends TLS, routes REST and gRPC, names every request; by a switch, verifies tokens with Keycloak"], "run")
     d.arrow([(L + LW / 2, 254), (L + LW / 2, 282)], sw=1.8)
 
     # ---- the three backends
@@ -78,6 +78,7 @@ def system(d):
     # ---- the right column
     d.group(R, 168, RW, 84, "purple", "IDENTITY")
     d.tool(R + 12, 188, RW - 24, 52, "keycloak", "Keycloak", ["One audience per backend"], "run")
+    d.arrow([(L + LW + 2, 214), (R - 2, 214)], sw=1.5, dash="5 4")
     d.arrow([(L + LW + 2, 330), (R + 40, 330), (R + 40, 256)], sw=1.5, dash="5 4")
     d.text(R + 50, 324, "every backend validates", size=10.5, fill=d.t["muted"])
     d.text(R + 50, 338, "every token, itself", size=10.5, fill=d.t["muted"])
@@ -93,7 +94,7 @@ def system(d):
     d.text(R + 12, 668, "One trace crosses the three backends", size=10.5, fill=d.t["muted"])
 
     d.status(L + 8, gy + 136, "run")
-    d.text(L + 20, gy + 140, "Run end to end by the 21 scenarios of scripts/scenarios.sh", size=11.5, fill=d.t["muted"])
+    d.text(L + 20, gy + 140, "Run end to end by the 22 scenarios of scripts/scenarios.sh", size=11.5, fill=d.t["muted"])
 
 
 def journey(d):

@@ -87,6 +87,7 @@ it.
 | Two services with no shared code; a token's audience | S18 | RabbitMQ's management page; Jaeger: a trace that names two services |
 | A time series in a hypertable; a cached report | S19 | `timescaledb_information.hypertables`; `Application/Queries/SalesReports.cs` |
 | A backend behind a gateway: what it believes, and what it does not | S20 | the API description names the edge's address; a forged `X-Forwarded-User` changes nothing; `Api/Program.cs`, `UseMPCoreGatewayForwarding` |
+| A gateway that verifies tokens does not replace the backend's own verification | S21, with `EDGE_AUTH=keycloak` | who answered each refusal: the edge, or the backend as Problem Details |
 | Alive and ready are two questions | none: stop PostgreSQL and ask | `/health/live` stays `Healthy`, `/health/ready` answers 503; over gRPC, service `live` and the empty service name |
 
 ## 4. What is not shown

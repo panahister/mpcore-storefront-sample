@@ -147,6 +147,7 @@ must be asked and what must not be decided alone.
 | See | REST and gRPC of three backends through one door, over TLS. The backend knows the public address from the gateway, and believes it because the gateway is a trusted proxy. It never believes the gateway about who the caller is: the token says that. |
 | Try | Replace the entries of `Gateway:TrustedProxies` with an address that is not the gateway's, start Commerce, and ask `/openapi/v1.json` through the edge. The address it names now begins with `http://`: the backend no longer believes what it is told about the scheme. |
 | Sources | MP Core ADR-007 and ADR-009; NIST SP 800-207 (never trust, always verify) |
+| Then | Switch the second wall on, `EDGE_AUTH=keycloak scripts/up.sh`, and run `scripts/scenarios.sh S21`. Read who answers each refusal, and why the backend still has to. [variations.md](variations.md) |
 | Skill | `mpcore-apply-security` |
 
 ## And then

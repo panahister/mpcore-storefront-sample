@@ -11,6 +11,16 @@
 # It does not decide who a caller is. It passes the bearer token on, and every backend validates it for
 # itself on every request: a gateway that validates as well is one more wall, never the only one
 # (MP Core ADR-007).
+#
+# That second wall is a switch: EDGE_AUTH in infrastructure/.env.
+#
+#   off        the edge passes every request on; the backends answer 401 themselves        (the default)
+#   keycloak   the edge verifies the signature of a token with Keycloak's public keys, and answers
+#              401 itself to a request that has no token, or one that was not signed by Keycloak
+#
+# The edge cannot know what a backend knows: for which backend a token was issued (its audience), and
+# what its holder may do there (roles). So the backends verify in both cases, and a token that the edge
+# lets through can still be refused.
 
 upstreams:
   - id: commerce-rest
@@ -33,6 +43,12 @@ upstreams:
     scheme: http
     nodes:
       "${{BACKEND_HOST}}:5300": 1
+
+# What the routes that need a token share. scripts/up.sh writes it, from the switch.
+plugin_configs:
+  - id: needs-a-token
+    plugins:
+__EDGE_AUTH__
 
 global_rules:
   - id: request-identity
@@ -61,11 +77,13 @@ routes:
     uri: /v1/analytics/*
     priority: 10
     upstream_id: analytics-rest
+    plugin_config_id: needs-a-token
 
   - id: commerce
     uri: /v1/*
     priority: 0
     upstream_id: commerce-rest
+    plugin_config_id: needs-a-token
 
   # The description of Commerce's API. The backend serves it in Development only; elsewhere this route
   # answers what the backend answers, which is that a token is required.
@@ -80,10 +98,12 @@ routes:
       - /storefront.commerce.v1.Catalog/*
       - /storefront.commerce.v1.Fulfillment/*
     upstream_id: commerce-grpc
+    plugin_config_id: needs-a-token
 
   - id: fulfillment-grpc
     uri: /storefront.fulfillment.v1.Shipments/*
     upstream_id: fulfillment-grpc
+    plugin_config_id: needs-a-token
 
 ssls:
   - id: this-machine

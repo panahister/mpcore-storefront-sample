@@ -207,6 +207,7 @@ expectation.
 | S18 | The warehouse service ships Sara's order. | Two services and no shared code: outbox, RabbitMQ, inbox, a gRPC-only host, the answer on a second queue, a token's audience |
 | S19 | Nora reads the figures of an order placed a moment ago. | A Kafka stream read into a TimescaleDB hypertable, a REST-only host, a cached report, a role policy, a validation message in Persian |
 | S20 | Everything again, through the edge. | Apache APISIX in front of the three backends: TLS, REST and gRPC through one door, the request's identity, forwarded headers from a trusted proxy, a forged identity header, a rate limit |
+| S21 | The edge verifies tokens as well, when it is switched on. | Two walls: what a gateway can know about a token (its signature) and what only a backend knows (its audience, its holder's role). Skipped, with the reason, when the switch is off |
 
 ## 7. API
 

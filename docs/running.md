@@ -153,9 +153,10 @@ grpcurl -cacert infrastructure/apisix/generated/localhost.crt -import-path fulfi
 | `fail: ... __EFMigrationsHistory` in the log of a first start | Harmless. EF Core reads the history table before it creates it. |
 | A backend fails at startup with "relation already exists" | The database was created by an older first migration. This sample has one migration per backend, written again when the model changes. Start clean: `scripts/down.sh --volumes`, then `scripts/up.sh`. |
 | A port is taken | Change it in `infrastructure/.env`, then run `scripts/up.sh` and `scripts/setup.sh` again. |
-| A change to the realm is not picked up | Keycloak imports the realm into an empty database only. Start clean. |
+| A change to the realm is not picked up | Keycloak imports the realm when its container is made. Make it again: `docker compose --env-file infrastructure/.env -f infrastructure/compose.yaml up -d --force-recreate keycloak`. |
 | Scenario S9 is skipped | `grpcurl` is not installed, or S1 did not run before it. |
 | Scenarios S18 or S19 are skipped | Fulfillment or Analytics is not running. |
+| Scenario S21 is skipped | The edge does not verify tokens: start it with `EDGE_AUTH=keycloak scripts/up.sh`. |
 | Scenario S20 is skipped, or the edge answers 502 | The edge cannot reach the backends. On Docker Desktop it reaches the loopback address; on Linux it does not, so start each backend with `STOREFRONT_BIND=0.0.0.0 scripts/run.sh commerce`. |
 | A browser warns about the edge's certificate | It was made by `scripts/up.sh` for this machine and is trusted by nobody. That is intended: name it explicitly, as the scenarios do. |
 | Checkout answers 400 `KEY_REQUIRED` | The request has no `Idempotency-Key` header. |
