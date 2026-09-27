@@ -9,7 +9,7 @@
 #   scripts/scenarios.sh S1 S5      # only these
 #
 # Needs: the Commerce backend running (scripts/run.sh commerce), curl and jq. S18 also needs the Fulfillment
-# backend, S19 the Analytics backend, and S20 all three and the edge. grpcurl for the gRPC scenarios and docker for a look inside Kafka
+# backend, S19 the Analytics backend, and S20 and S21 all three and the edge. grpcurl for the gRPC scenarios and docker for a look inside Kafka
 # and PostgreSQL are optional. A step whose tool or backend is missing is skipped, not failed.
 set -uo pipefail
 
@@ -35,6 +35,8 @@ rabbit_dead() { # prints how many messages wait there; nothing when the manageme
   curl -s -m 5 -u "$(env_value RABBITMQ_USER storefront):$(env_value RABBITMQ_PASSWORD storefront)" "$RABBITMQ_API/queues" \
     | jq -r '[.[] | select(.name == "wolverine-dead-letter-queue") | .messages] | add // 0' 2>/dev/null
 }
+# The edge is there when it answers a request that needs a token with 401, whoever of the two says it.
+edge_is_up() { [ -s "$EDGE_CA" ] && [ "$(curl -s -m 5 --cacert "$EDGE_CA" -o /dev/null -w '%{http_code}' "$EDGE_URL/v1/basket")" = 401 ]; }
 docker_up() { command -v docker >/dev/null && compose ps "$1" --status running -q 2>/dev/null | grep -q .; }
 WAIT_SECONDS="${WAIT_SECONDS:-30}"
 # Only when the API runs inside the compose network: the issuer it expects is http://keycloak:8080/...,
@@ -71,6 +73,8 @@ api() { # api METHOD PATH [TOKEN] [JSON]  → sets STATUS, LAST and REPLAYED ("t
   REPLAYED=$(tr -d '\r' <"$headers" | awk -F': ' 'tolower($1) == "idempotency-replayed" { print tolower($2) }')
   REQUEST_ID=$(tr -d '\r' <"$headers" | awk -F': ' 'tolower($1) == "x-request-id" { print $2 }')
   SERVED_BY=$(tr -d '\r' <"$headers" | awk -F': ' 'tolower($1) == "server" { print $2 }')
+  # A backend answers a failure as Problem Details (RFC 9457). What answers anything else is not a backend.
+  ANSWERED_BY=$(tr -d '\r' <"$headers" | awk -F': ' 'tolower($1) == "content-type" { print ($2 ~ /^application\/problem\+json/) ? "backend" : "other" }')
   rm -f "$out" "$headers"
 }
 
@@ -697,7 +701,7 @@ edge_grpc() { # edge_grpc BACKEND PROTO TOKEN METHOD JSON  → sets REPLY; the e
     ${auth[@]+"${auth[@]}"} -d "$5" "$EDGE_ADDR" "$4" 2>&1)
 }
 direct_url="$BASE_URL"
-if [ ! -s "$EDGE_CA" ] || [ "$(curl -s -m 5 --cacert "$EDGE_CA" -o /dev/null -w '%{http_code}' "$EDGE_URL/v1/catalog/products?size=1")" != 200 ]; then
+if ! edge_is_up; then
   skip "the edge does not answer at $EDGE_URL (scripts/up.sh starts it; on Linux run the backends with STOREFRONT_BIND=0.0.0.0)"
 else
   BASE_URL="$EDGE_URL"
@@ -708,7 +712,9 @@ else
   case "$SERVED_BY" in APISIX*) ok "answered by $SERVED_BY" ;; *) bad "answered by '$SERVED_BY', expected APISIX" ;; esac
 
   api GET /v1/basket
-  expect 401 "a basket without a token, through the edge: the backend decides, not the edge"
+  expect 401 "a basket without a token, through the edge"
+  api GET /v1/backoffice/orders "$SARA20"
+  expect 403 "sara in the back office: the backend decides what a caller may do, not the edge"
   [ -n "$REQUEST_ID" ] && check "$(jq -r '.requestId' <<<"$LAST")" "$REQUEST_ID" "the request's identity in the backend's answer, as the edge gave it" \
     || bad "the edge gave the request no identity"
 
@@ -755,6 +761,54 @@ else
   BASE_URL="$direct_url" api GET "/v1/catalog/products?size=1"
   expect 200 "the backend itself, asked directly at the same moment"
   empty_basket "$SARA20"
+fi
+BASE_URL="$direct_url"
+fi
+
+# ------------------------------------------------------------------------------------ S21
+if selected S21; then
+section "S21 Two walls: the edge verifies a token, and the backend verifies it again"
+direct_url="$BASE_URL"
+forged() { # forged TOKEN → the same token, with roles its holder was never given; the signature no longer fits
+  python3 - "$1" <<'FORGE'
+import base64, json, sys
+head, payload, signature = sys.argv[1].split(".")
+claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+claims["realm_access"] = {"roles": ["support-agent", "catalog-manager", "customer"]}
+payload = base64.urlsafe_b64encode(json.dumps(claims, separators=(",", ":")).encode()).decode().rstrip("=")
+print(".".join([head, payload, signature]))
+FORGE
+}
+edge_answers() { [ "$ANSWERED_BY" != backend ] && ok "$* → HTTP $STATUS, answered by the edge" || bad "$* → answered by the backend: the edge let it through"; }
+backend_answers() { [ "$ANSWERED_BY" = backend ] && ok "$* → HTTP $STATUS, answered by the backend" || bad "$* → HTTP $STATUS, not answered by the backend"; }
+if ! edge_is_up; then
+  skip "the edge does not answer at $EDGE_URL"
+else
+  BASE_URL="$EDGE_URL"
+  api GET /v1/basket
+  if [ "$STATUS" = 401 ] && [ "$ANSWERED_BY" = backend ]; then
+    skip "the edge does not verify tokens: EDGE_AUTH is off (docs/variations.md). The backends verify, as S11 and S20 show"
+  else
+    SARA21=$(token_for sara); WAREHOUSE21=$(warehouse_token)
+    expect 401 "a basket without a token"; edge_answers "no token"
+    api GET /v1/basket "not-a-token"
+    expect 401 "a token that is no token"; edge_answers "it never reached a backend"
+    api GET /v1/backoffice/orders "$(forged "$SARA21")"
+    expect 401 "sara's token, rewritten to make her a support agent"; edge_answers "the signature no longer fits"
+    api GET /v1/backoffice/orders "$SARA21"
+    expect 403 "sara's real token, in the back office"; backend_answers "the edge let her in; her role did not"
+    api GET /v1/analytics/sales/hourly "$WAREHOUSE21"
+    expect 401 "the warehouse's token at the figures: signed by Keycloak, issued for other backends"
+    backend_answers "the edge cannot know for whom a token was issued; the backend does"
+    api GET /v1/basket "$SARA21"
+    expect 200 "sara's real token, her basket"
+    # S20 may have used up what one address may browse in ten seconds; the window is waited out.
+    deadline=$((SECONDS + 15))
+    until api GET "/v1/catalog/products?size=1"; [ "$STATUS" != 429 ] || [ $SECONDS -ge $deadline ]; do sleep 1; done
+    expect 200 "anybody still browses the catalog without a token"
+    BASE_URL="$direct_url" api GET /v1/backoffice/orders "$(forged "$SARA21")"
+    expect 401 "the rewritten token, shown to the backend directly, past the edge"; backend_answers "the second wall stands alone"
+  fi
 fi
 BASE_URL="$direct_url"
 fi
