@@ -223,7 +223,7 @@ Measured on 2026-09-27, on one machine (macOS, Apple Silicon), after everything 
 | Contract tests between the three | 8 passed |
 | The three backends built with warnings as errors, and tested, against the **packed** packages | 0 warnings, 0 errors; every test passed |
 | Scenarios against the running backends, MP Core from source, on empty databases | 20 scenarios, 124 checks of 124; scenario S20, through the edge, 17 of 17 |
-| 20 scenarios on GitHub Actions (Linux), against the packages from nuget.org | 123 checks of 123 |
+| 21 scenarios on GitHub Actions (Linux), against the packages from nuget.org, the edge included | 138 checks of 138, none skipped |
 | Traces that name all three services, in Jaeger after a scenario run | found |
 | Card tokens in the queue tables and in the logs after the runs | none |
 
