@@ -230,7 +230,7 @@ and mistakes in this sample's own design, which are the ones a team is most like
 
 ## Where MP Core comes from
 
-From nuget.org, version `0.9.0`. When a clone of MP Core sits next to this repository (`../mpcore`), the
+From nuget.org, version `0.9.1`. When a clone of MP Core sits next to this repository (`../mpcore`), the
 backends build against its source instead: a breakpoint in framework code works, and a change there is
 picked up by the next build. [`Directory.Build.targets`](Directory.Build.targets) decides, and says so in
 the build output. To choose for one build:
