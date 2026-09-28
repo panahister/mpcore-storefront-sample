@@ -50,7 +50,7 @@ public sealed partial class MessageCatalogTests
     }
 
     [Fact]
-    public void A_broken_rule_renders_in_both_languages_with_its_arguments()
+    public void A_broken_rule_renders_in_every_language_with_its_arguments()
     {
         var product = new FakeProducts().Seed("TNT-1", 1_000m, 10);
         var broken = Assert.Throws<BusinessRuleValidationException>(() => product.ChangePrice(Price.Of(5_000m), FakeClock.At2026().UtcNow));
@@ -59,6 +59,17 @@ public sealed partial class MessageCatalogTests
 
         Assert.Equal("A price may move by at most 50% in one step (from 1000.00 to 5000.00).", catalog.Localize(message, CultureInfo.GetCultureInfo("en")));
         Assert.Contains("50٪", catalog.Localize(message, CultureInfo.GetCultureInfo("fa-IR")), StringComparison.Ordinal);
+        // zh-Hans is the parent of zh-CN: the culture a transport negotiates for a caller who asks for zh-CN.
+        Assert.Equal("价格单次最多只能变动 50%（从 1000.00 到 5000.00）。", catalog.Localize(message, CultureInfo.GetCultureInfo("zh-Hans")));
+    }
+
+    [Fact]
+    public void A_module_without_a_chinese_text_falls_back_to_english()
+    {
+        var message = new FailureMessageDescriptor("basket.empty");
+        var catalog = Catalog();
+
+        Assert.Equal(catalog.Localize(message, CultureInfo.GetCultureInfo("en")), catalog.Localize(message, CultureInfo.GetCultureInfo("zh-Hans")));
     }
 
     [Fact]
@@ -86,10 +97,15 @@ public sealed partial class MessageCatalogTests
 
         foreach (var defaults in files)
         {
+            // Every file has a Persian twin; a module may add more languages, each translating every key.
             var persian = defaults[..^".resx".Length] + ".fa.resx";
             Assert.True(File.Exists(persian), $"missing {persian}");
-            Assert.Equal(Keys(defaults), Keys(persian));
+            var translations = Directory.EnumerateFiles(Path.GetDirectoryName(defaults)!, Path.GetFileNameWithoutExtension(defaults) + ".*.resx").ToList();
+            Assert.Contains(persian, translations);
+            Assert.All(translations, translation => Assert.Equal(Keys(defaults), Keys(translation)));
         }
+
+        Assert.Contains(files, static file => File.Exists(file[..^".resx".Length] + ".zh-Hans.resx"));
     }
 
     private static List<string> Keys(string file) =>

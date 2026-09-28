@@ -390,7 +390,7 @@ fi
 
 # ------------------------------------------------------------------------------------ S13
 if selected S13; then
-section "S13 Ali translates a message; Reza reads it in Persian"
+section "S13 Ali translates a message; Reza reads it in Persian; Mina reads a broken rule in Simplified Chinese"
 # Failures leave the modules as message keys. MP Core's catalog renders them in the language the caller
 # asked for, from the modules' resource files, and support can override a text at run time; the change is
 # stored in this host's own database and reaches every instance within the refresher's interval.
@@ -421,6 +421,12 @@ LANG_HEADER=fa api PUT /v1/catalog/products/BPK-DNA-28/price "$MINA13" '{"newPri
 expect 422 "a price move of more than half breaks rule C7"
 case "$(jq -r '.detail // empty' <<<"$LAST")" in *حداکثر*) ok "the rule's message is rendered in Persian with its arguments" ;; *) bad "no Persian detail"; show ;; esac
 show '{errorDomain, errorCode, detail}'
+# The same rule for a caller who asks for zh-CN: MP Core answers in zh-Hans, its parent culture, which is the
+# Catalog's third resource file.
+LANG_HEADER=zh-CN api PUT /v1/catalog/products/BPK-DNA-28/price "$MINA13" '{"newPrice":1,"reason":"typo"}'
+expect 422 "the same rule, asked for in Simplified Chinese (zh-CN)"
+case "$(jq -r '.detail // empty' <<<"$LAST")" in *价格单次最多只能变动*) ok "the rule's message is rendered in Simplified Chinese with its arguments" ;; *) bad "no Chinese detail"; show ;; esac
+show '{errorCode, detail}'
 
 api DELETE /v1/backoffice/translations/fa/basket.total_changed "$ALI13"
 expect 204 "ali removes the override; the resource file's text applies again"

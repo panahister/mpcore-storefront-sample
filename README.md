@@ -92,7 +92,7 @@ decision, a name. What makes it safe is MP Core's, and it is the same in all thr
 
 | The sample's code | MP Core |
 |---|---|
-| Says that a price may not move by more than half in one change | Reports the broken rule as 422, under the rule's code, with the numbers that broke it, in English or Persian; audits the refused attempt |
+| Says that a price may not move by more than half in one change | Reports the broken rule as 422, under the rule's code, with the numbers that broke it, in English, Persian or Simplified Chinese; audits the refused attempt |
 | Empties the basket and announces what it held | Saves both in one commit; releases the message only after it |
 | Marks the checkout endpoint `RequireIdempotencyKey()` | Stores the key and the answer with the change; answers a repeat with the first answer |
 | Declares which exception means "lost a race" | Retries with growing, random pauses; discards the messages of the attempt that failed |
