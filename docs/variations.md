@@ -68,7 +68,7 @@ decision is ADR-007: a gateway that validates is one more wall, never a replacem
 
 | Value | MP Core is |
 |---|---|
-| `NuGet` | the packages from nuget.org, version `0.9.0` |
+| `NuGet` | the packages from nuget.org, version `0.9.1` |
 | `Local` | the source of a clone at `../mpcore`: a breakpoint in the framework works, and a change there is picked up by the next build |
 
 ```bash
