@@ -12,10 +12,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="analytics.period_invalid" xml:space="preserve">
-    <value>پایان بازه باید بعد از آغاز آن باشد.</value>
+  <data name="localization.unknown_message_key" xml:space="preserve">
+    <value>“{key}”不是本系统使用的消息键。</value>
   </data>
-  <data name="analytics.period_too_long" xml:space="preserve">
-    <value>هر گزارش حداکثر {max_days} روز را پوشش می‌دهد.</value>
+  <data name="localization.key_invalid" xml:space="preserve">
+    <value>消息键由小写字母组成，并以点分隔。</value>
+  </data>
+  <data name="localization.culture_unknown" xml:space="preserve">
+    <value>“{culture}”不是已知的语言代码。</value>
+  </data>
+  <data name="localization.translation_not_found" xml:space="preserve">
+    <value>没有此键和此语言的已存翻译。</value>
   </data>
 </root>

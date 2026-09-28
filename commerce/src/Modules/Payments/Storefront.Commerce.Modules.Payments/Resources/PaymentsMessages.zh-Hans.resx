@@ -13,24 +13,24 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="payments.provider_unavailable" xml:space="preserve">
-    <value>درگاه پرداخت در دسترس نیست. لطفاً چند لحظه‌ی دیگر دوباره تلاش کنید.</value>
+    <value>支付服务商暂时不可用。请稍后再试。</value>
   </data>
   <data name="payments.payment_not_pending" xml:space="preserve">
-    <value>این پرداخت قبلاً تسویه شده است ({status}).</value>
+    <value>这笔付款已经结算（{status}）。</value>
   </data>
   <data name="payments.payment_not_authorized" xml:space="preserve">
-    <value>فقط پرداختی که انجام شده باشد قابل بازپرداخت است ({status}).</value>
+    <value>只有已扣款的付款才能退款（{status}）。</value>
   </data>
   <data name="payments.amount_not_positive" xml:space="preserve">
-    <value>مبلغ پرداخت باید مثبت باشد.</value>
+    <value>付款金额必须为正数。</value>
   </data>
   <data name="payments.buyer_required" xml:space="preserve">
-    <value>برای پرداخت وارد حساب خود شوید.</value>
+    <value>请登录后付款。</value>
   </data>
   <data name="payments.payment_token_invalid" xml:space="preserve">
-    <value>توکن پرداخت، توکن معتبر درگاه نیست.</value>
+    <value>支付令牌不是有效的服务商令牌。</value>
   </data>
   <data name="payments.payment_intent_unusable" xml:space="preserve">
-    <value>این پرداخت دیگر قابل استفاده نیست. لطفاً کارت خود را دوباره وارد کنید.</value>
+    <value>这笔付款已无法使用。请重新输入您的银行卡。</value>
   </data>
 </root>

@@ -13,33 +13,33 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="basket.buyer_required" xml:space="preserve">
-    <value>برای استفاده از سبد خرید وارد شوید.</value>
+    <value>请登录后使用购物篮。</value>
   </data>
   <data name="basket.product_not_found" xml:space="preserve">
-    <value>محصولی با کد {sku} وجود ندارد.</value>
+    <value>不存在 SKU 为 {sku} 的商品。</value>
   </data>
   <data name="basket.quantity_out_of_range" xml:space="preserve">
-    <value>هر ردیف سبد بین {min} تا {max} عدد می‌پذیرد.</value>
+    <value>购物篮中每一行的数量应在 {min} 到 {max} 件之间。</value>
   </data>
   <data name="basket.too_many_lines" xml:space="preserve">
-    <value>سبد حداکثر {max} محصول مختلف می‌پذیرد.</value>
+    <value>购物篮最多容纳 {max} 种不同的商品。</value>
   </data>
   <data name="basket.product_not_sellable" xml:space="preserve">
-    <value>محصول {sku} قابل فروش نیست.</value>
+    <value>商品 {sku} 不在售。</value>
   </data>
   <data name="basket.empty" xml:space="preserve">
-    <value>سبد خرید شما خالی است.</value>
+    <value>您的购物篮是空的。</value>
   </data>
   <data name="basket.total_changed" xml:space="preserve">
-    <value>قیمت‌های سبد خرید شما تغییر کرده است. لطفاً پیش از پرداخت سبد را دوباره بررسی کنید.</value>
+    <value>您购物篮中的价格已变动。请在付款前重新查看购物篮。</value>
   </data>
   <data name="basket.phone_invalid" xml:space="preserve">
-    <value>شماره‌ی تلفن باید به قالب بین‌المللی باشد: علامت +، کد کشور و شماره.</value>
+    <value>电话号码必须采用国际格式：加号、国家代码和号码。</value>
   </data>
   <data name="basket.postal_code_invalid" xml:space="preserve">
-    <value>کد پستی باید ۳ تا ۱۲ حرف و رقم باشد.</value>
+    <value>邮政编码必须是 3 到 12 位的字母和数字。</value>
   </data>
   <data name="basket.payment_intent_unusable" xml:space="preserve">
-    <value>این پرداخت دیگر قابل استفاده نیست. لطفاً کارت خود را دوباره وارد کنید.</value>
+    <value>这笔付款已无法使用。请重新输入您的银行卡。</value>
   </data>
 </root>

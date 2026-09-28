@@ -13,36 +13,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ordering.buyer_required" xml:space="preserve">
-    <value>برای ثبت یا مشاهده‌ی سفارش وارد شوید.</value>
+    <value>请登录后下单或查看订单。</value>
   </data>
   <data name="ordering.order_not_found" xml:space="preserve">
-    <value>چنین سفارشی وجود ندارد.</value>
+    <value>没有这笔订单。</value>
   </data>
   <data name="ordering.note_required" xml:space="preserve">
-    <value>پشتیبانی باید دلیل لغو را بنویسد.</value>
+    <value>客服取消订单时必须说明理由。</value>
   </data>
   <data name="ordering.order_id_invalid" xml:space="preserve">
-    <value>شناسه‌ی سفارش یک UUID معتبر نیست.</value>
+    <value>订单标识不是有效的 UUID。</value>
   </data>
   <data name="ordering.status_unknown" xml:space="preserve">
-    <value>وضعیت درخواست‌شده جزو وضعیت‌های سفارش نیست.</value>
+    <value>状态筛选条件不是已知的订单状态。</value>
   </data>
   <data name="ordering.no_lines" xml:space="preserve">
-    <value>سفارش باید دست‌کم یک ردیف داشته باشد.</value>
+    <value>一笔订单至少需要一行。</value>
   </data>
   <data name="ordering.phone_invalid" xml:space="preserve">
-    <value>شماره‌ی تلفن باید به قالب بین‌المللی باشد: علامت +، کد کشور و شماره.</value>
+    <value>电话号码必须采用国际格式：加号、国家代码和号码。</value>
   </data>
   <data name="ordering.postal_code_invalid" xml:space="preserve">
-    <value>کد پستی باید ۳ تا ۱۲ حرف و رقم باشد.</value>
+    <value>邮政编码必须是 3 到 12 位的字母和数字。</value>
   </data>
   <data name="ordering.already_shipped" xml:space="preserve">
-    <value>سفارش ارسال شده است و دیگر قابل لغو نیست.</value>
+    <value>订单已发货，无法再取消。</value>
   </data>
   <data name="ordering.already_cancelled" xml:space="preserve">
-    <value>سفارش قبلاً لغو شده است.</value>
+    <value>订单已经取消。</value>
   </data>
   <data name="ordering.status_mismatch" xml:space="preserve">
-    <value>این مرحله نیاز دارد سفارش در وضعیت {expected} باشد؛ وضعیت فعلی {actual} است.</value>
+    <value>此步骤需要订单处于 {expected}；当前为 {actual}。</value>
   </data>
 </root>

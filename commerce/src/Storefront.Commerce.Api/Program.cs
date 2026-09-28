@@ -67,7 +67,7 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing.AddSource("Npgsql"));
 // Failures reach the caller as message keys. The catalog renders them in the language the caller asked
 // for (Accept-Language): MP Core's own messages ship in English and Persian, and every module adds its
-// resource files. The Catalog's messages are also in Simplified Chinese. Translations support edits at run time come from the database (see AddInfrastructure).
+// resource files: English and Simplified Chinese. Translations support edits at run time come from the database (see AddInfrastructure).
 builder.Services.AddMPCoreMessageCatalog(catalog => catalog
     .AddResources<CatalogMessages>()
     .AddResources<BasketMessages>()
@@ -147,7 +147,7 @@ builder.Services.AddHostHealthChecks();
 
 // The languages a caller may ask for, besides English. "zh-Hans" answers a caller who asks for "zh-CN":
 // MP Core accepts the requested culture or its parent.
-string[] languages = ["fa", "zh-Hans"];
+string[] languages = ["zh-Hans"];
 builder.Services.AddGrpc().AddMPCoreFailureHandling(options => { foreach (var language in languages) options.SupportedCultures.Add(language); });
 // The empty service name is the whole host; "live" asks the process only.
 builder.Services.AddGrpcHealthChecks(options =>

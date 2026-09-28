@@ -111,7 +111,7 @@ var anonymousDescriptionSurface = builder.Environment.IsDevelopment();
 // What "alive" and "ready" mean is the same on every transport: Hosting/HostHealthChecks.cs.
 builder.Services.AddHostHealthChecks();
 
-builder.Services.AddGrpc().AddMPCoreFailureHandling(options => options.SupportedCultures.Add("fa"));
+builder.Services.AddGrpc().AddMPCoreFailureHandling(options => options.SupportedCultures.Add("zh-Hans"));
 // The empty service name is the whole host; "live" asks the process only.
 builder.Services.AddGrpcHealthChecks(options =>
     options.Services.Map(HostHealthChecks.Live, static check => check.Tags.Contains(HostHealthChecks.Live)));
