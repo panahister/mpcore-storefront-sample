@@ -199,7 +199,7 @@ expectation.
 | S10 | Sara cancels a paid order. | Refund, order history |
 | S11 | Who may see what. | 401, 403, 404 instead of 403, validation |
 | S12 | The events on Kafka, with their partition keys. | Partitioning by order and by SKU |
-| S13 | Ali translates a message; Reza reads it in Persian. | The message catalog, `Accept-Language`, stored translations, a business rule rendered with its arguments |
+| S13 | Ali translates a message; Reza reads it in Persian; Mina reads a broken rule in Simplified Chinese. | The message catalog, `Accept-Language`, stored translations, a business rule rendered with its arguments |
 | S14 | Sara's checkout is sent twice; Mina enters the same delivery note twice. | Request idempotency (`Idempotency-Key`, `Idempotency-Replayed`, 400 and 422), and a business key where a request key is not enough |
 | S15 | Reza's basket is checked out eight times at the same moment. | Optimistic concurrency, retry, and the outbox: a message leaves only with the change that caused it, so there is one order and one charge |
 | S16 | Twelve orders for one product within a few seconds. | Optimistic concurrency under load, retry with growing pauses and jitter, and an answer for a message that is given up: every order comes to an end |
@@ -293,7 +293,8 @@ commerce/src/
     Application/Events/               reactions to the module's own domain events (Catalog)
     Application/Validators/           FluentValidation validators, one per caller-facing command
     Infrastructure/                   EF mappings, repositories, read models, the DemoPay gateway, AddXModule
-    Resources/<Context>Messages.resx  message texts, English; <Context>Messages.fa.resx, Persian
+    Resources/<Context>Messages.resx  message texts, English; <Context>Messages.fa.resx, Persian;
+                                      CatalogMessages.zh-Hans.resx, Simplified Chinese (Catalog only)
   Modules/<Context>/Storefront.Commerce.Modules.<Context>.Contracts/  what other modules may use (Catalog, Basket, Payments):
                                       module messages, and one read-only interface, ICatalogLookup
 commerce/tests/Storefront.Commerce.Tests/

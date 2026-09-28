@@ -129,7 +129,8 @@ The payment token chooses what the provider does:
 | `tok_flaky` | answers 503 once, then approves |
 | `tok_psp_down` | always answers 503 |
 
-Add `Accept-Language: fa` to any request to read its messages in Persian.
+Add `Accept-Language: fa` to any request to read its messages in Persian, or `Accept-Language: zh-CN` to read
+the Catalog's in Simplified Chinese.
 
 ## Through the edge
 

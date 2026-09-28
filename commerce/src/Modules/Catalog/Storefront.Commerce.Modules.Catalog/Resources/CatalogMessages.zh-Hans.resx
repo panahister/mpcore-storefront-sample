@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="catalog.product_not_found" xml:space="preserve">
+    <value>不存在 SKU 为 {sku} 的商品。</value>
+  </data>
+  <data name="catalog.sku_taken" xml:space="preserve">
+    <value>SKU 为 {sku} 的商品已存在。</value>
+  </data>
+  <data name="catalog.sku_invalid" xml:space="preserve">
+    <value>SKU 由 3 到 32 个大写字母、数字和连字符组成。</value>
+  </data>
+  <data name="catalog.price_not_positive" xml:space="preserve">
+    <value>价格必须大于零。</value>
+  </data>
+  <data name="catalog.price_above_ceiling" xml:space="preserve">
+    <value>价格不能超过 {ceiling}。</value>
+  </data>
+  <data name="catalog.category_unknown" xml:space="preserve">
+    <value>“{category}”不是本店的商品类别。</value>
+  </data>
+  <data name="catalog.product_discontinued" xml:space="preserve">
+    <value>商品 {sku} 已停售，不能再更改。</value>
+  </data>
+  <data name="catalog.price_unchanged" xml:space="preserve">
+    <value>新价格与当前价格相同。</value>
+  </data>
+  <data name="catalog.price_jump_too_large" xml:space="preserve">
+    <value>价格单次最多只能变动 {max_move_percent}%（从 {current} 到 {requested}）。</value>
+  </data>
+  <data name="catalog.quantity_not_positive" xml:space="preserve">
+    <value>数量必须是正数。</value>
+  </data>
+  <data name="catalog.insufficient_stock" xml:space="preserve">
+    <value>{sku} 仅有 {available} 件可用，但请求了 {requested} 件。</value>
+  </data>
+  <data name="catalog.reservation_mismatch" xml:space="preserve">
+    <value>{sku} 的释放或发货数量将超过已预留的数量。</value>
+  </data>
+  <data name="catalog.delivery_reference_reused" xml:space="preserve">
+    <value>{sku} 的到货单 {reference} 已按 {received} 件入库，而不是 {requested} 件。</value>
+  </data>
+  <data name="catalog.price_too_precise" xml:space="preserve">
+    <value>价格最多精确到分。</value>
+  </data>
+</root>
