@@ -13,6 +13,7 @@ Nothing is a mock-up: real tokens, real brokers, real databases, and twenty-two 
 [![.NET](https://img.shields.io/badge/.NET-10-512bd4)](global.json)
 
 [Run it](#run-it) ·
+[Why MP Core](#why-mp-core-in-this-shop) ·
 [**Build with AI agents**](docs/building-with-ai-agents.md) ·
 [Learning path](docs/learning-path.md) ·
 [Architecture](docs/architecture.md) ·
@@ -77,6 +78,19 @@ Jaeger, Prometheus and Grafana. Only the payment provider is simulated.
 The three backends share no code. Each declares the messages it reads in its own project, and a test
 holds the copies together.
 
+## The shop, part by part
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/shop-dark.svg">
+  <img alt="The six parts of the shop: Catalog, Basket, Ordering and Payments in Commerce, and the Fulfillment and Analytics services. For each, what it owns, how many business rules it holds, what it tells the others, and what MP Core does for it there" src="docs/images/shop-light.svg" width="100%">
+</picture>
+
+Four modules in one process and two services of their own. Each part owns its data and its rules, 55 in
+all. One part learns what another did from a message, and none writes another's data. The top of each column
+is the sample's code. The bottom is MP Core, and the same questions get the same answers in every part:
+how a rule is refused, when a message leaves, what happens the second time.
+[docs/business.md](docs/business.md) lists every rule by its code and the class that holds it.
+
 ## One order, from a basket to a parcel
 
 <picture>
@@ -88,7 +102,30 @@ Every box is one transaction that changes one module. Between the boxes there is
 message leaves with the change that caused it. The code of the whole journey is business: a rule, a
 decision, a name. What makes it safe is MP Core's, and it is the same in all three backends.
 
-## What the sample's code does, and what MP Core does
+## Why MP Core, in this shop
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/why-mpcore-dark.svg">
+  <img alt="Nine guarantees the shop needs. For each, what a team builds and proves without MP Core, the line Storefront wrote with MP Core, and the scenario that proves it; and the code counted: 2,753 lines of Storefront business against 4,970 lines in MP Core's 28 packages" src="docs/images/why-mpcore-light.svg" width="100%">
+</picture>
+
+A shop is judged on its bad days, and the guarantees for those days are the same in every shop: a checkout
+sent twice, eight at once, a message delivered again, a provider that is down. Without a framework that
+holds them, each team builds them again, and has to prove them again: an outbox, a key store, an inbox,
+retries that drop the messages of the attempt that failed, an error model for two transports, an audit
+trail in the commit of the change.
+
+In Storefront each of those is one line, or nothing at all, and the scenario in the last column proves it
+against the running system. The code Storefront wrote is its business: the rules, the decisions, the
+names.
+
+**How the code was counted.** Lines of C# that are neither blank, nor comments, nor a brace alone;
+migrations, `bin` and `obj` left out. Storefront: the `Domain` and `Application` projects and folders of the
+three backends. MP Core: the `src` of its 28 runtime packages at `0.9.1`; its tests are another 6,747
+lines, 460 tests, run against PostgreSQL, TimescaleDB and Redis. A count of lines says how much there is,
+not what it guarantees; what it guarantees is in the column of scenarios.
+
+### What the sample's code does, and what MP Core does
 
 | The sample's code | MP Core |
 |---|---|

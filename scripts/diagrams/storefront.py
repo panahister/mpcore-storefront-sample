@@ -126,6 +126,92 @@ def journey(d):
              (x0 - 12, y0 + h + gy / 2), (x0 - 12, y0 + h + gy + h / 2), (x0 - 2, y0 + h + gy + h / 2)], sw=1.6)
 
 
+def shop(d):
+    d.heading(32, 44, "The shop, part by part",
+              "What each part owns and decides is the sample's code. The blue boxes are what MP Core does for it there.")
+    parts = [
+        ("green", "Catalog", ["Products, prices, stock"], "14 rules", ["A price moves by half", "at most, in one step", "Stock: all lines or none"], "price changed", ["Rules answered as 422", "Refusals audited", "Read-through cache", "Sent after the commit"]),
+        ("blue", "Basket", ["The basket, checkout"], "10 rules", ["Every price from the", "catalog, never the client", "Checked out once"], "basket checked out", ["Idempotency-Key", "A race retried", "Buyer from the token", "Sent after the commit"]),
+        ("purple", "Ordering", ["The order, its process"], "12 rules", ["No order waits for ever", "A late answer changes", "nothing"], "order paid", ["A process on messages", "Inbox: handled once", "A given-up request", "is answered"]),
+        ("teal", "Payments", ["Intents, charges, refunds"], "8 rules", ["A decline is never", "retried; the card token", "stays in this module"], "payment registered", ["Retry, timeout and", "circuit breaker", "Charges audited", "Sent after the commit"]),
+        ("rose", "Fulfillment", ["The warehouse"], "5 rules", ["A parcel leaves once", "Dispatch names the", "carrier and the code"], "parcel dispatched", ["gRPC, rich status", "Inbox: handled once", "Dispatch audited", "RabbitMQ both ways"]),
+        ("amber", "Analytics", ["The figures"], "6 rules", ["A fact counts once", "A report covers", "31 days at most"], "", ["Kafka, from the start", "A TimescaleDB", "hypertable", "Reports cached"]),
+    ]
+    w, gx, x0, y0, h = 148, 10, 32, 110, 200
+    d.group(x0 - 8, y0 - 18, 4 * w + 3 * gx + 16, h + 28, "green", "COMMERCE  ·  ONE PROCESS, FOUR MODULES, ONE SCHEMA EACH")
+    d.group(x0 + 4 * (w + gx) - 8, y0 - 18, 2 * w + gx + 16, h + 28, "slate", "TWO SERVICES")
+    for i, (color, name, owns, count, rules, tells, core) in enumerate(parts):
+        x = x0 + i * (w + gx) + (8 if i >= 4 else 0)
+        d.card(x, y0, w, h, color, name, owns + ["", f"`{count}`"] + rules, kicker="the sample's code", line_size=11.2)
+        if tells:
+            d.line(x + 12, y0 + h - 38, x + w - 12, y0 + h - 38, color=d.stroke(color), sw=1, dash="3 4")
+            d.text(x + 14, y0 + h - 22, "tells: " + tells, size=10.2, weight=600, fill=d.ink(color))
+        cy = y0 + h + 22
+        d.arrow([(x + w / 2, cy - 12), (x + w / 2, cy - 2)], color=d.stroke("blue"), sw=1.2)
+        d.rect(x, cy, w, 116, d.fill("blue"), d.stroke("blue"), r=10, sw=1.1)
+        d.icon("mpcore", x + 12, cy + 10, 16)
+        d.text(x + 34, cy + 23, "MP CORE HERE", size=9.3, weight=700, fill=d.accent("blue"), spacing="0.8")
+        for k, s in enumerate(core):
+            d.text(x + 12, cy + 46 + k * 17, s, size=11, weight=600, fill=d.ink("blue"))
+    by = y0 + h + 158
+    d.rect(x0, by, 6 * w + 5 * gx + 8, 64, d.fill("slate"), d.stroke("slate"), r=10, shadow=True)
+    d.icon("mpcore", x0 + 16, by + 14, 20)
+    d.text(x0 + 46, by + 28, "Under all six, the same", size=13, weight=700, fill=d.ink("slate"))
+    d.text(x0 + 46, by + 47, "A token checked by every backend, deny by default · one commit per step · failures as Problem Details and gRPC status, "
+           "in the caller's language · traces, metrics and logs", size=11, fill=d.t["muted"])
+
+
+def why(d):
+    d.heading(32, 44, "What this shop needs, without MP Core and with it",
+              "Every row is a guarantee the scenarios prove against the running system. Without MP Core, the team builds it and proves it again.")
+    rows = [
+        ("A change and its message", "An outbox, a relay, and proof a crash loses neither", "no handler calls SaveChangesAsync", "S1"),
+        ("A checkout sent twice", "A key store in the same transaction, and a replay", ".RequireIdempotencyKey()", "S14"),
+        ("A message delivered twice", "An inbox, checked in the transaction that handles it", "options.UseMPCoreInbox();", "S18"),
+        ("Eight checkouts at once", "Random-pause retries; a failed try's messages dropped", "OnException<DbUpdateConcurrencyException>()", "S15 S16"),
+        ("A broken business rule", "One error model on REST and gRPC, texts per language", "CheckRule(new PriceMoveMustBeGradual(...))", "S3 S13"),
+        ("Who did what", "Audit tables, the actor from the token, one commit", "audit.RecordAsync(...)", "S3"),
+        ("A payment provider down", "Retry, timeout, circuit breaker; never retry a decline", "AddMPCoreResilientHttpClient(...)", "S6 S7"),
+        ("A token at the door", "Checks per audience, deny by default, trust no gateway", ".RequireAuthorization(policy)", "S11 S20"),
+        ("Following one order", "Traces across three services, metrics, clean logs", "nothing", "S1"),
+    ]
+    x0, cw = 32, [196, 344, 306, 76]
+    hy = 92
+    heads = [("slate", "THE SHOP NEEDS"), ("rose", "WITHOUT MP CORE, THE TEAM BUILDS"), ("green", "WITH MP CORE, STOREFRONT WROTE"), ("blue", "PROVED BY")]
+    x = x0
+    for (color, label), w in zip(heads, cw):
+        d.text(x + 4, hy, label, size=10, weight=700, fill=d.accent(color), spacing="0.8")
+        x += w + 6
+    rh, y = 42, hy + 12
+    for i, (need, without, code, proof) in enumerate(rows):
+        x = x0
+        d.rect(x, y, cw[0], rh - 6, d.fill("slate"), d.stroke("slate"), r=8, sw=1)
+        d.text(x + 12, y + 23, need, size=12, weight=700, fill=d.ink("slate"))
+        x += cw[0] + 6
+        d.rect(x, y, cw[1], rh - 6, d.fill("rose"), d.stroke("rose"), r=8, sw=1)
+        d.text(x + 12, y + 23, without, size=11, fill=d.ink("rose"))
+        x += cw[1] + 6
+        d.rect(x, y, cw[2], rh - 6, d.fill("green"), d.stroke("green"), r=8, sw=1)
+        d.text(x + 12, y + 23, code, size=11, fill=d.ink("green"), mono=code != "nothing", italic=code == "nothing")
+        x += cw[2] + 6
+        d.chip(x, y + 6, proof, "blue", size=10.5, pad=8)
+        y += rh
+    y += 14
+    total = cw[0] + cw[1] + cw[2] + cw[3] + 18
+    d.rect(x0, y, total, 88, d.t["canvas"], d.t["frame"], r=10, sw=1)
+    d.text(x0 + 16, y + 26, "The code, counted", size=13, weight=700)
+    d.text(x0 + 16, y + 44, "lines of C#, without comments and braces", size=10.5, fill=d.t["muted"])
+    scale = (total - 260) / 4970
+    bx = x0 + 240
+    for k, (color, label, n) in enumerate([("green", "Storefront's business: Domain and Application", 2753),
+                                           ("blue", "MP Core's 28 packages, with 460 tests of their own", 4970)]):
+        by = y + 18 + k * 32
+        d.rect(bx, by, n * scale, 24, d.fill(color), d.stroke(color), r=6, sw=1)
+        d.text(bx + 10, by + 16.5, f"{n:,}  ·  {label}", size=11, weight=600, fill=d.ink(color))
+
+
+write_both(f"{OUT}/shop", 1000, 566, "The shop, part by part: what each module and service owns and decides, and what MP Core does for it there", shop)
+write_both(f"{OUT}/why-mpcore", 1000, 610, "What the shop needs without MP Core and with it: the guarantees, the code Storefront wrote, and the scenario that proves each", why)
 write_both(f"{OUT}/system", 1000, 730, "The Storefront system: a gateway, three backends, two brokers, identity and observability", system)
 write_both(f"{OUT}/order-journey", 1000, 480, "The eight steps of an order across the modules and services, and what MP Core guarantees at each", journey)
 print("drawn:", ", ".join(sorted(os.listdir(OUT))))
