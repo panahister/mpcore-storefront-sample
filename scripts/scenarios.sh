@@ -390,18 +390,18 @@ fi
 
 # ------------------------------------------------------------------------------------ S13
 if selected S13; then
-section "S13 Ali translates a message; Reza reads it in Persian; Mina reads a broken rule in Simplified Chinese"
+section "S13 Ali translates a message; Reza and Mina read theirs in Simplified Chinese"
 # Failures leave the modules as message keys. MP Core's catalog renders them in the language the caller
 # asked for, from the modules' resource files, and support can override a text at run time; the change is
 # stored in this host's own database and reaches every instance within the refresher's interval.
 ALI13=$(token_for ali); REZA13=$(token_for reza); MINA13=$(token_for mina)
-NEW_TEXT="قیمت سبد شما تغییر کرد؛ لطفاً پیش از پرداخت دوباره نگاه کنید."
-api PUT /v1/backoffice/translations/fa/basket.total_changed "$ALI13" "$(jq -nc --arg t "$NEW_TEXT" '{text:$t}')"
-expect 200 "ali stores a Persian text for basket.total_changed"
-api PUT /v1/backoffice/translations/fa/ordering.not_a_real_key "$ALI13" '{"text":"x"}'
+NEW_TEXT="您购物篮中的价格刚刚变动了，付款前请再看一眼。"
+api PUT /v1/backoffice/translations/zh-Hans/basket.total_changed "$ALI13" "$(jq -nc --arg t "$NEW_TEXT" '{text:$t}')"
+expect 200 "ali stores a Chinese text for basket.total_changed, over the one in the Basket's resource file"
+api PUT /v1/backoffice/translations/zh-Hans/ordering.not_a_real_key "$ALI13" '{"text":"x"}'
 expect 400 "a key the code does not use is refused"
 show '{errorCode, violations}'
-api PUT /v1/backoffice/translations/fa/basket.total_changed "$REZA13" '{"text":"x"}'
+api PUT /v1/backoffice/translations/zh-Hans/basket.total_changed "$REZA13" '{"text":"x"}'
 expect 403 "reza (customer) may not translate anything"
 say "waiting for the refresher to pick the change up"; sleep 3
 
@@ -409,26 +409,21 @@ fill_basket "$REZA13" BPK-DNA-28 1; OLD13="$BASKET_TOTAL"
 api GET /v1/catalog/products/BPK-DNA-28/stock "$MINA13"; current13=$(jq -r '.price' <<<"$LAST")
 api PUT /v1/catalog/products/BPK-DNA-28/price "$MINA13" "$(jq -nc --argjson p "$(calc "($current13 * 105 | round) / 100")" '{newPrice:$p, reason:"S13 supplier price rise"}')"
 expect 200 "mina raises the day pack's price by 5%"
-LANG_HEADER=fa checkout "$REZA13" tok_visa_ok "$OLD13" "Reza Karimi" Osaka
-expect 422 "reza checks out with the old total and asks for Persian"
-check "$(jq -r '.detail // empty' <<<"$LAST")" "$NEW_TEXT" "the detail is ali's text"
+LANG_HEADER=zh-CN checkout "$REZA13" tok_visa_ok "$OLD13" "Reza Karimi" Osaka
+expect 422 "reza checks out with the old total and asks for Chinese (zh-CN)"
+check "$(jq -r '.detail // empty' <<<"$LAST")" "$NEW_TEXT" "the detail is ali's stored text, not the resource file's"
 LANG_HEADER=en checkout "$REZA13" tok_visa_ok "$OLD13" "Reza Karimi" Osaka
 expect 422 "the same failure in English comes from the module's resource file"
 show '{errorCode, detail}'
 
-# A business rule with arguments, rendered in Persian: the price ceiling rule of the Catalog aggregate.
-LANG_HEADER=fa api PUT /v1/catalog/products/BPK-DNA-28/price "$MINA13" '{"newPrice":1,"reason":"typo"}'
-expect 422 "a price move of more than half breaks rule C7"
-case "$(jq -r '.detail // empty' <<<"$LAST")" in *حداکثر*) ok "the rule's message is rendered in Persian with its arguments" ;; *) bad "no Persian detail"; show ;; esac
-show '{errorDomain, errorCode, detail}'
-# The same rule for a caller who asks for zh-CN: MP Core answers in zh-Hans, its parent culture, which is the
-# Catalog's third resource file.
+# A business rule with arguments, for a caller who asks for zh-CN: MP Core answers in zh-Hans, its parent
+# culture, from the Catalog's resource file. The price ceiling rule of the Catalog aggregate.
 LANG_HEADER=zh-CN api PUT /v1/catalog/products/BPK-DNA-28/price "$MINA13" '{"newPrice":1,"reason":"typo"}'
-expect 422 "the same rule, asked for in Simplified Chinese (zh-CN)"
+expect 422 "a price move of more than half breaks rule C7, asked for in Simplified Chinese (zh-CN)"
 case "$(jq -r '.detail // empty' <<<"$LAST")" in *价格单次最多只能变动*) ok "the rule's message is rendered in Simplified Chinese with its arguments" ;; *) bad "no Chinese detail"; show ;; esac
 show '{errorCode, detail}'
 
-api DELETE /v1/backoffice/translations/fa/basket.total_changed "$ALI13"
+api DELETE /v1/backoffice/translations/zh-Hans/basket.total_changed "$ALI13"
 expect 204 "ali removes the override; the resource file's text applies again"
 api DELETE /v1/basket/items/BPK-DNA-28 "$REZA13"; expect 200 "reza empties his basket"
 api DELETE /v1/basket/items/BPK-DNA-28 "$REZA13"; expect 200 "removing it again is idempotent"
@@ -704,9 +699,9 @@ else
 
   figures /v1/analytics/sales/hourly "$SARA19"; expect 403 "sara (customer) asks for the figures"
   figures /v1/analytics/sales/hourly; expect 401 "the figures without a token"
-  LANG_HEADER=fa figures "/v1/analytics/sales/hourly?from=2026-01-01T00:00:00Z&to=2026-06-01T00:00:00Z" "$NORA"
-  expect 400 "a period too long for an hourly report, asked in Persian"
-  show '{title, detail, violations}'
+  LANG_HEADER=zh-CN figures "/v1/analytics/sales/hourly?from=2026-01-01T00:00:00Z&to=2026-06-01T00:00:00Z" "$NORA"
+  expect 400 "a period too long for an hourly report, asked in Simplified Chinese (zh-CN)"
+  case "$(jq -r '[.violations[]?.message] | join(" ")' <<<"$LAST")" in *一份报告最多涵盖*) ok "the violation is told in Chinese, from Analytics' resource file" ;; *) bad "no Chinese violation"; show '{title, detail, violations}' ;; esac
   if docker_up timescale; then
     check "$(psql_in timescale storefront_analytics "select count(*) from timescaledb_information.hypertables where hypertable_schema = 'analytics' and hypertable_name = 'order_facts'")" 1 "order_facts is a hypertable"
     check "$(psql_in timescale storefront_analytics "select count(*) from wolverine.wolverine_dead_letters")" 0 "messages the figures gave up on"

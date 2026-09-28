@@ -86,7 +86,7 @@ public sealed class ValidatorTests
         Assert.Equal(("KEY_INVALID", "localization.key_invalid"), Single(violations, "key"));
         Assert.Equal(("CULTURE_UNKNOWN", "localization.culture_unknown"), Single(violations, "culture"));
         Assert.Equal("NOT_EMPTY", Assert.Single(violations, v => v.FieldPath == "text").RuleCode);
-        Assert.Empty(Violations(new SetTranslationValidator(), new SetTranslation("basket.empty", "fa", "متن")));
+        Assert.Empty(Violations(new SetTranslationValidator(), new SetTranslation("basket.empty", "zh-Hans", "文本")));
     }
 
     private static (string Code, string Key) Single(IReadOnlyList<FieldViolation> violations, string fieldPath)

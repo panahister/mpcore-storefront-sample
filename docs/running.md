@@ -129,8 +129,8 @@ The payment token chooses what the provider does:
 | `tok_flaky` | answers 503 once, then approves |
 | `tok_psp_down` | always answers 503 |
 
-Add `Accept-Language: fa` to any request to read its messages in Persian, or `Accept-Language: zh-CN` to read
-the Catalog's in Simplified Chinese.
+Add `Accept-Language: zh-CN` to any request to read its messages in Simplified Chinese. MP Core's own messages,
+such as the violations of a request's shape, come in English: MP Core ships them in English and Persian.
 
 ## Through the edge
 

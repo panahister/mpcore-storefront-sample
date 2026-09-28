@@ -19,10 +19,10 @@ namespace Storefront.Commerce.Tests.Unit;
 public sealed class CheckoutContractTests
 {
     public static TheoryData<string> Phones() =>
-        ["+14155550123", " +14155550123 ", "+442079460123", "4155550123", "0014155550123", "+0155550123", "+1234567", "+1234567890123456", "+1 415 555 0123", "+1415555O123", "+۱۴۱۵۵۵۵۰۱۲۳", "", "   "];
+        ["+14155550123", " +14155550123 ", "+442079460123", "4155550123", "0014155550123", "+0155550123", "+1234567", "+1234567890123456", "+1 415 555 0123", "+1415555O123", "+１４１５５５５０１２３", "", "   "];
 
     public static TheoryData<string> PostalCodes() =>
-        ["94103", " 94103 ", "SW1A 1AA", "1000-205", "K1A 0B1", "12", "1234567890123", "-94103", "94103-", "94_103", "۹۴۱۰۳", "", "   "];
+        ["94103", " 94103 ", "SW1A 1AA", "1000-205", "K1A 0B1", "12", "1234567890123", "-94103", "94103-", "94_103", "９４１０３", "", "   "];
 
     private static bool BasketAccepts(CheckoutAddress address) => new CheckoutAddressValidator().Validate(address).IsValid;
 

@@ -58,18 +58,18 @@ public sealed partial class MessageCatalogTests
         var catalog = Catalog();
 
         Assert.Equal("A price may move by at most 50% in one step (from 1000.00 to 5000.00).", catalog.Localize(message, CultureInfo.GetCultureInfo("en")));
-        Assert.Contains("50٪", catalog.Localize(message, CultureInfo.GetCultureInfo("fa-IR")), StringComparison.Ordinal);
         // zh-Hans is the parent of zh-CN: the culture a transport negotiates for a caller who asks for zh-CN.
         Assert.Equal("价格单次最多只能变动 50%（从 1000.00 到 5000.00）。", catalog.Localize(message, CultureInfo.GetCultureInfo("zh-Hans")));
     }
 
     [Fact]
-    public void A_module_without_a_chinese_text_falls_back_to_english()
+    public void A_language_the_store_does_not_speak_falls_back_to_english()
     {
         var message = new FailureMessageDescriptor("basket.empty");
         var catalog = Catalog();
 
-        Assert.Equal(catalog.Localize(message, CultureInfo.GetCultureInfo("en")), catalog.Localize(message, CultureInfo.GetCultureInfo("zh-Hans")));
+        Assert.Equal("您的购物篮是空的。", catalog.Localize(message, CultureInfo.GetCultureInfo("zh-CN")));
+        Assert.Equal(catalog.Localize(message, CultureInfo.GetCultureInfo("en")), catalog.Localize(message, CultureInfo.GetCultureInfo("de-DE")));
     }
 
     [Fact]
@@ -97,15 +97,13 @@ public sealed partial class MessageCatalogTests
 
         foreach (var defaults in files)
         {
-            // Every file has a Persian twin; a module may add more languages, each translating every key.
-            var persian = defaults[..^".resx".Length] + ".fa.resx";
-            Assert.True(File.Exists(persian), $"missing {persian}");
+            // Every file has a Chinese twin, and it translates exactly the default keys; so does any other.
+            var chinese = defaults[..^".resx".Length] + ".zh-Hans.resx";
+            Assert.True(File.Exists(chinese), $"missing {chinese}");
             var translations = Directory.EnumerateFiles(Path.GetDirectoryName(defaults)!, Path.GetFileNameWithoutExtension(defaults) + ".*.resx").ToList();
-            Assert.Contains(persian, translations);
+            Assert.Contains(chinese, translations);
             Assert.All(translations, translation => Assert.Equal(Keys(defaults), Keys(translation)));
         }
-
-        Assert.Contains(files, static file => File.Exists(file[..^".resx".Length] + ".zh-Hans.resx"));
     }
 
     private static List<string> Keys(string file) =>

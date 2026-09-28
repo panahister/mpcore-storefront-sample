@@ -199,13 +199,13 @@ expectation.
 | S10 | Sara cancels a paid order. | Refund, order history |
 | S11 | Who may see what. | 401, 403, 404 instead of 403, validation |
 | S12 | The events on Kafka, with their partition keys. | Partitioning by order and by SKU |
-| S13 | Ali translates a message; Reza reads it in Persian; Mina reads a broken rule in Simplified Chinese. | The message catalog, `Accept-Language`, stored translations, a business rule rendered with its arguments |
+| S13 | Ali translates a message; Reza and Mina read theirs in Simplified Chinese. | The message catalog, `Accept-Language`, stored translations, a business rule rendered with its arguments |
 | S14 | Sara's checkout is sent twice; Mina enters the same delivery note twice. | Request idempotency (`Idempotency-Key`, `Idempotency-Replayed`, 400 and 422), and a business key where a request key is not enough |
 | S15 | Reza's basket is checked out eight times at the same moment. | Optimistic concurrency, retry, and the outbox: a message leaves only with the change that caused it, so there is one order and one charge |
 | S16 | Twelve orders for one product within a few seconds. | Optimistic concurrency under load, retry with growing pauses and jitter, and an answer for a message that is given up: every order comes to an end |
 | S17 | Sara pays through a payment intent, then tries it again, then tries Reza's. | The card token stays with Payments: no message and no queue table holds it |
 | S18 | The warehouse service ships Sara's order. | Two services and no shared code: outbox, RabbitMQ, inbox, a gRPC-only host, the answer on a second queue, a token's audience |
-| S19 | Nora reads the figures of an order placed a moment ago. | A Kafka stream read into a TimescaleDB hypertable, a REST-only host, a cached report, a role policy, a validation message in Persian |
+| S19 | Nora reads the figures of an order placed a moment ago. | A Kafka stream read into a TimescaleDB hypertable, a REST-only host, a cached report, a role policy, a validation message in Simplified Chinese |
 | S20 | Everything again, through the edge. | Apache APISIX in front of the three backends: TLS, REST and gRPC through one door, the request's identity, forwarded headers from a trusted proxy, a forged identity header, a rate limit |
 | S21 | The edge verifies tokens as well, when it is switched on. | Two walls: what a gateway can know about a token (its signature) and what only a backend knows (its audience, its holder's role). Skipped, with the reason, when the switch is off |
 
@@ -274,7 +274,7 @@ commerce/src/
     Hosting/DevelopmentSetup.cs       migrations and catalog seed in Development
     Hosting/GivenUpMessages.cs        what the order process is told when a step ends in the error queue
     Hosting/TranslationHandlers.cs    support edits message texts (commands, validators, failures)
-    Resources/HostMessages*.resx      the host's own message texts, English and Persian
+    Resources/HostMessages*.resx      the host's own message texts, English and Simplified Chinese
     Rest/Endpoints/StorefrontEndpoints.cs   every REST endpoint
     Grpc/Services/CommerceGrpcServices.cs   the gRPC services
     Protos/storefront_commerce.proto      the gRPC contract
@@ -293,8 +293,7 @@ commerce/src/
     Application/Events/               reactions to the module's own domain events (Catalog)
     Application/Validators/           FluentValidation validators, one per caller-facing command
     Infrastructure/                   EF mappings, repositories, read models, the DemoPay gateway, AddXModule
-    Resources/<Context>Messages.resx  message texts, English; <Context>Messages.fa.resx, Persian;
-                                      CatalogMessages.zh-Hans.resx, Simplified Chinese (Catalog only)
+    Resources/<Context>Messages.resx  message texts, English; <Context>Messages.zh-Hans.resx, Simplified Chinese
   Modules/<Context>/Storefront.Commerce.Modules.<Context>.Contracts/  what other modules may use (Catalog, Basket, Payments):
                                       module messages, and one read-only interface, ICatalogLookup
 commerce/tests/Storefront.Commerce.Tests/

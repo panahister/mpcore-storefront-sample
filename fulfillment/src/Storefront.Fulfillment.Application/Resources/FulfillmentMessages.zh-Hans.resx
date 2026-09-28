@@ -13,18 +13,18 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="fulfillment.shipment_not_found" xml:space="preserve">
-    <value>برای این سفارش مرسوله‌ای وجود ندارد.</value>
+    <value>此订单没有发货单。</value>
   </data>
   <data name="fulfillment.order_id_invalid" xml:space="preserve">
-    <value>شناسه‌ی سفارش یک UUID معتبر نیست.</value>
+    <value>订单标识不是有效的 UUID。</value>
   </data>
   <data name="fulfillment.status_unknown" xml:space="preserve">
-    <value>وضعیت خواسته‌شده جزو وضعیت‌های مرسوله نیست.</value>
+    <value>状态筛选条件不是已知的发货状态。</value>
   </data>
   <data name="fulfillment.shipment_not_pending" xml:space="preserve">
-    <value>سفارش {order_number} قبلاً از انبار خارج شده است ({status}).</value>
+    <value>订单 {order_number} 已离开仓库（{status}）。</value>
   </data>
   <data name="fulfillment.shipment_empty" xml:space="preserve">
-    <value>مرسوله باید دست‌کم یک قلم داشته باشد.</value>
+    <value>一个发货单至少需要一行。</value>
   </data>
 </root>

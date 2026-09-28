@@ -118,7 +118,7 @@ var anonymousDescriptionSurface = builder.Environment.IsDevelopment();
 // What "alive" and "ready" mean is the same on every transport: Hosting/HostHealthChecks.cs.
 builder.Services.AddHostHealthChecks();
 
-builder.Services.AddMPCoreHttpFailureHandling(options => options.SupportedCultures.Add("fa"));
+builder.Services.AddMPCoreHttpFailureHandling(options => options.SupportedCultures.Add("zh-Hans"));
 builder.Services.AddMPCoreProblemDetailsSecurityResponses();
 if (enableOpenApi)
 {

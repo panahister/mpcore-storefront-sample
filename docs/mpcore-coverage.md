@@ -44,7 +44,7 @@ added with one package reference and one call, `options.UseMPCoreRabbitMq(...)`,
 | `MPCore.Messaging.Wolverine.RabbitMQ` | `UseMPCoreRabbitMq`; a durable route and a durable listener | Commerce `Api/Hosting/CommerceQueues.cs`; Fulfillment `Api/Hosting/FulfillmentQueues.cs`, `Api/Program.cs` |
 | `MPCore.Idempotency.EntityFrameworkCore.PostgreSql` | `AddMPCoreIdempotency`, `UseMPCoreIdempotency`, `ApplyMPCoreIdempotency` | `Infrastructure/DependencyInjection.cs`, `AppDbContext.cs`, in all three |
 | `MPCore.Validation.FluentValidation` | `UseMPCoreFluentValidation`, `AddMPCoreValidators` | `Api/Program.cs`; every `Application/Validators/*Validator.cs` |
-| `MPCore.Localization` | `AddMPCoreMessageCatalog`; resource files in English and Persian, and the Catalog's in Simplified Chinese | `Api/Program.cs`; every `Resources/*Messages.resx` and `.fa.resx`; `CatalogMessages.zh-Hans.resx` |
+| `MPCore.Localization` | `AddMPCoreMessageCatalog`; resource files in English and Simplified Chinese | `Api/Program.cs`; every `Resources/*Messages.resx` and `.zh-Hans.resx` |
 | `MPCore.Localization.EntityFrameworkCore.PostgreSql` | translations edited at run time | Commerce `Api/Hosting/TranslationHandlers.cs`, `/v1/backoffice/translations` |
 | `MPCore.Caching.Abstractions` | `IReadThroughCache.GetOrCreateAsync`, `ICache.RemoveAsync` | Commerce `Catalog/Application/Queries/GetProductDetails.cs`, `Catalog/Application/Events/ProductUpdatedHandler.cs`; Analytics `Application/Queries/SalesReports.cs` |
 | `MPCore.Caching.Hybrid` | `AddMPCoreHybridCache` | Commerce `Infrastructure/DependencyInjection.cs` |
