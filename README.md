@@ -8,9 +8,9 @@ Three backends behind a gateway, built with [MP Core](https://github.com/panahis
 Nothing is a mock-up: real tokens, real brokers, real databases, and twenty-two scenarios that prove it.
 
 [![ci](https://github.com/panahister/mpcore-storefront-sample/actions/workflows/ci.yml/badge.svg)](https://github.com/panahister/mpcore-storefront-sample/actions/workflows/ci.yml)
-[![MP Core](https://img.shields.io/nuget/v/MPCore.Domain?label=MP%20Core&color=512bd4)](https://github.com/panahister/mpcore)
-[![licence](https://img.shields.io/badge/licence-Apache--2.0-blue)](LICENSE)
-[![.NET](https://img.shields.io/badge/.NET-10-512bd4)](global.json)
+[![MP Core](https://img.shields.io/nuget/v/MPCore.Domain?label=MP%20Core&color=6267e8)](https://github.com/panahister/mpcore)
+[![license](https://img.shields.io/badge/license-Apache--2.0-6267e8)](LICENSE)
+[![.NET](https://img.shields.io/badge/.NET-10-6267e8)](global.json)
 
 [Run it](#run-it) ·
 [Why MP Core](#why-mp-core-in-this-shop) ·
@@ -19,7 +19,9 @@ Nothing is a mock-up: real tokens, real brokers, real databases, and twenty-two 
 [Architecture](docs/architecture.md) ·
 [The business](docs/business.md) ·
 [Variations](docs/variations.md) ·
-[What building it taught](docs/lessons.md)
+[What building it taught](docs/lessons.md) ·
+[MP Frontend](https://github.com/panahister/mpfrontend) ·
+[MP ecosystem](https://github.com/panahister/mpcore/blob/main/docs/architecture/ecosystem.md)
 
 </div>
 
@@ -129,7 +131,7 @@ not what it guarantees; what it guarantees is in the column of scenarios.
 
 | The sample's code | MP Core |
 |---|---|
-| Says that a price may not move by more than half in one change | Reports the broken rule as 422, under the rule's code, with the numbers that broke it, in English or Simplified Chinese; audits the refused attempt |
+| Says that a price may not move by more than half in one change | Reports the broken rule as 422, under the rule's code, with the numbers that broke it, in English, Simplified Chinese, or Arabic; audits the refused attempt |
 | Empties the basket and announces what it held | Saves both in one commit; releases the message only after it |
 | Marks the checkout endpoint `RequireIdempotencyKey()` | Stores the key and the answer with the change; answers a repeat with the first answer |
 | Declares which exception means "lost a race" | Retries with growing, random pauses; discards the messages of the attempt that failed |
@@ -227,6 +229,10 @@ above describe this system.
 The tests and the scenarios run on GitHub on every change to this repository.
 [docs/lessons.md](docs/lessons.md) lists what they found: defects in MP Core, which were fixed in MP Core,
 and mistakes in this sample's own design, which are the ones a team is most likely to repeat.
+
+For the current publication candidate, a 2026-10-08 Release build against MP Core packages completed
+with zero warnings and zero errors; all 290 tests passed (Commerce 241, Fulfillment 19, Analytics 22,
+Contracts 8). See [the running guide](docs/running.md) for the reproducible command and scope.
 
 ## Where MP Core comes from
 

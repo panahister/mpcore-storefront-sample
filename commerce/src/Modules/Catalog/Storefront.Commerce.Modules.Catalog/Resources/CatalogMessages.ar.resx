@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="catalog.product_not_found" xml:space="preserve">
+    <value>لا يوجد منتج برمز SKU {sku}.</value>
+  </data>
+  <data name="catalog.sku_taken" xml:space="preserve">
+    <value>يوجد منتج برمز SKU {sku} بالفعل.</value>
+  </data>
+  <data name="catalog.sku_invalid" xml:space="preserve">
+    <value>يجب أن يتكون رمز SKU من 3 إلى 32 حرفاً لاتينياً كبيراً أو رقماً أو شرطة.</value>
+  </data>
+  <data name="catalog.price_not_positive" xml:space="preserve">
+    <value>يجب أن يكون السعر أكبر من صفر.</value>
+  </data>
+  <data name="catalog.price_above_ceiling" xml:space="preserve">
+    <value>لا يمكن أن يتجاوز السعر {ceiling}.</value>
+  </data>
+  <data name="catalog.category_unknown" xml:space="preserve">
+    <value>الفئة '{category}' ليست من فئات المتجر.</value>
+  </data>
+  <data name="catalog.product_discontinued" xml:space="preserve">
+    <value>تم إيقاف المنتج {sku} ولا يمكن تعديله.</value>
+  </data>
+  <data name="catalog.price_unchanged" xml:space="preserve">
+    <value>السعر الجديد هو نفسه السعر الحالي.</value>
+  </data>
+  <data name="catalog.price_jump_too_large" xml:space="preserve">
+    <value>يمكن تغيير السعر بنسبة لا تتجاوز {max_move_percent}% في خطوة واحدة (من {current} إلى {requested}).</value>
+  </data>
+  <data name="catalog.quantity_not_positive" xml:space="preserve">
+    <value>يجب أن تكون الكمية عدداً موجباً.</value>
+  </data>
+  <data name="catalog.insufficient_stock" xml:space="preserve">
+    <value>المتاح من {sku} هو {available} فقط؛ الكمية المطلوبة {requested}.</value>
+  </data>
+  <data name="catalog.reservation_mismatch" xml:space="preserve">
+    <value>لا يمكن تحرير أو شحن كمية من {sku} تتجاوز الكمية المحجوزة.</value>
+  </data>
+  <data name="catalog.delivery_reference_reused" xml:space="preserve">
+    <value>تم استلام الشحنة {reference} للمنتج {sku} بكمية {received}، وليس {requested}.</value>
+  </data>
+  <data name="catalog.price_too_precise" xml:space="preserve">
+    <value>لا يمكن أن تتجاوز دقة السعر أجزاء المئة.</value>
+  </data>
+</root>

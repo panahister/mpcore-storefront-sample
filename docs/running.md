@@ -1,5 +1,15 @@
 # Running Storefront
 
+## Frontend authorization-code client
+
+The imported public `storefront-web` client supports authorization code with S256 PKCE. Its local
+callbacks are exactly `http://localhost:4401/api/session/callback` and
+`http://localhost:4402/api/session/callback`; origins are the corresponding two app roots.
+`bash scripts/verify-frontend-client.sh` checks that contract locally and in CI. It does not alter a
+live realm, grant roles or change token audiences. Existing password-grant scenario behavior is retained.
+For an existing realm, inspect its client settings rather than assuming a modified import is applied.
+Production must configure its own exact HTTPS callbacks/origins; this is a local reference profile.
+
 ## What you need
 
 | What | Why |
@@ -131,6 +141,20 @@ The payment token chooses what the provider does:
 
 Add `Accept-Language: zh-CN` to any request to read its messages in Simplified Chinese. MP Core's own messages,
 such as the violations of a request's shape, come in English: MP Core ships them in English and Persian.
+
+All three product backends additionally support Arabic with `Accept-Language: ar` or regional variants
+such as `ar-SA` (the corresponding language metadata for gRPC). Commerce's five resource groups cover
+46 keys, Analytics two and Fulfillment five, with the same placeholder names as the defaults. Existing
+English and Chinese text, rule codes, roles and stored translation behavior are preserved. MP Core-owned
+generic security/validation messages are not translated by these additions; do not infer complete
+whole-platform Arabic coverage.
+
+Run `dotnet test commerce/Storefront.Commerce.Backend.sln --configuration Release -p:MPCoreSource=NuGet`
+to verify the standalone package-based sample, rather than implicitly selecting a sibling MP Core clone.
+The 2026-10-08 publication run passed Commerce 241, Fulfillment 19, Analytics 22 and Contracts 8
+(290 total), with zero build warnings and zero build errors. Run each service's solution and the root
+contract project with the same Release/NuGet arguments. The missing-Arabic regressions were first seen
+failing. This is local evidence, not remote CI or full production acceptance.
 
 ## Through the edge
 

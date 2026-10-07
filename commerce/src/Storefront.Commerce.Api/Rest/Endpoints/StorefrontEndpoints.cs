@@ -62,12 +62,14 @@ public static class StorefrontEndpoints
                     new BrowseProducts(category, search, page ?? 1, size ?? PageRequest.DefaultSize, sort, desc ?? false, includeDiscontinued ?? false),
                     ct).ConfigureAwait(false)).ToHttpResult(Results.Ok))
             .AllowAnonymous()
+            .Produces<Page<ProductSummary>>(200)
             .WithName("BrowseProducts");
 
         catalog.MapGet("/products/{sku}", static async (string sku, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<ProductDetails>>(new GetProductDetails(sku), ct).ConfigureAwait(false))
                 .ToHttpResult(Results.Ok))
             .AllowAnonymous()
+            .Produces<ProductDetails>(200)
             .WithName("GetProduct");
 
         var manage = catalog.MapGroup("").RequireAuthorization(StorefrontPolicies.CatalogManager);
@@ -75,11 +77,13 @@ public static class StorefrontEndpoints
         manage.MapPost("/products", static async (ListProduct request, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<ProductStockView>>(request, ct).ConfigureAwait(false))
                 .ToHttpResult(view => Results.Created($"/v1/catalog/products/{view.Sku}", view)))
+            .Produces<ProductStockView>(201)
             .WithName("ListProduct");
 
         manage.MapPut("/products/{sku}/price", static async (string sku, ChangePriceRequest request, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<ProductStockView>>(new ChangeProductPrice(sku, request.NewPrice, request.Reason), ct)
                     .ConfigureAwait(false)).ToHttpResult(Results.Ok))
+            .Produces<ProductStockView>(200)
             .WithName("ChangeProductPrice");
 
         manage.MapPost("/products/{sku}/restock", static async (
@@ -89,22 +93,26 @@ public static class StorefrontEndpoints
                 return (await idempotent.ExecuteAsync(command, token => bus.InvokeAsync<Result<ProductStockView>>(command, token), ct)
                     .ConfigureAwait(false)).ToHttpResult(Results.Ok);
             })
+            .Produces<ProductStockView>(200)
             .WithName("RestockProduct");
 
         manage.MapPost("/products/{sku}/discontinue", static async (string sku, ReasonRequest request, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<ProductStockView>>(new DiscontinueProduct(sku, request.Reason), ct)
                     .ConfigureAwait(false)).ToHttpResult(Results.Ok))
+            .Produces<ProductStockView>(200)
             .WithName("DiscontinueProduct");
 
         manage.MapGet("/products/{sku}/stock", static async (string sku, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<ProductStockView>>(new GetProductStock(sku), ct).ConfigureAwait(false))
                 .ToHttpResult(Results.Ok))
+            .Produces<ProductStockView>(200)
             .WithName("GetProductStock");
 
         manage.MapGet("/restock-alerts", static async (int? page, int? size, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<Page<RestockAlertView>>>(
                     new ListRestockAlerts(page ?? 1, size ?? PageRequest.DefaultSize), ct).ConfigureAwait(false))
                 .ToHttpResult(Results.Ok))
+            .Produces<Page<RestockAlertView>>(200)
             .WithName("ListRestockAlerts");
 
         return catalog;
@@ -116,21 +124,25 @@ public static class StorefrontEndpoints
 
         basket.MapGet("/", static async (IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<BasketView>>(new GetMyBasket(), ct).ConfigureAwait(false)).ToHttpResult(Results.Ok))
+            .Produces<BasketView>(200)
             .WithName("GetMyBasket");
 
         // Reading the basket changes nothing; saying "I have seen the new prices" is a command of its own.
         basket.MapPost("/acknowledge-prices", static async (IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<BasketView>>(new AcknowledgeBasketPrices(), ct).ConfigureAwait(false)).ToHttpResult(Results.Ok))
+            .Produces<BasketView>(200)
             .WithName("AcknowledgeBasketPrices");
 
         basket.MapPut("/items/{sku}", static async (string sku, QuantityRequest request, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<BasketView>>(new SetBasketItem(sku, request.Quantity), ct).ConfigureAwait(false))
                 .ToHttpResult(Results.Ok))
+            .Produces<BasketView>(200)
             .WithName("SetBasketItem");
 
         basket.MapDelete("/items/{sku}", static async (string sku, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<BasketView>>(new SetBasketItem(sku, 0), ct).ConfigureAwait(false))
                 .ToHttpResult(Results.Ok))
+            .Produces<BasketView>(200)
             .WithName("RemoveBasketItem");
 
         // 202, not 201: the basket has been taken and the order has its identity, but Ordering creates it a
@@ -139,6 +151,7 @@ public static class StorefrontEndpoints
                 (await idempotent.ExecuteAsync(request, token => bus.InvokeAsync<Result<CheckoutAccepted>>(request, token), ct)
                     .ConfigureAwait(false)).ToHttpResult(accepted => Results.Accepted($"/v1/orders/{accepted.OrderId}", accepted)))
             .RequireIdempotencyKey()
+            .Produces<CheckoutAccepted>(202)
             .WithName("Checkout");
 
         return basket;
@@ -154,6 +167,7 @@ public static class StorefrontEndpoints
         payments.MapPost("/intents", static async (CreatePaymentIntent request, IIdempotentExecutor idempotent, IMessageBus bus, CancellationToken ct) =>
                 (await idempotent.ExecuteAsync(request, token => bus.InvokeAsync<Result<PaymentIntentView>>(request, token), ct)
                     .ConfigureAwait(false)).ToHttpResult(intent => Results.Created((string?)null, intent)))
+            .Produces<PaymentIntentView>(201)
             .WithName("CreatePaymentIntent");
 
         return payments;
@@ -168,17 +182,20 @@ public static class StorefrontEndpoints
                     new ListMyOrders(page ?? 1, size ?? PageRequest.DefaultSize, sort, desc ?? true), ct).ConfigureAwait(false))
                 .ToHttpResult(Results.Ok))
             .RequireAuthorization(StorefrontPolicies.Customer)
+            .Produces<Page<OrderSummary>>(200)
             .WithName("ListMyOrders");
 
         orders.MapGet("/{orderId:guid}", static async (Guid orderId, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<OrderView>>(new GetOrder(orderId), ct).ConfigureAwait(false)).ToHttpResult(Results.Ok))
             .RequireAuthorization(StorefrontPolicies.OrderReaders)
+            .Produces<OrderView>(200)
             .WithName("GetOrder");
 
         orders.MapPost("/{orderId:guid}/cancel", static async (Guid orderId, CancelRequest? request, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<OrderView>>(new CancelOrder(orderId, request?.Note), ct).ConfigureAwait(false))
                 .ToHttpResult(Results.Ok))
             .RequireAuthorization(StorefrontPolicies.OrderCancellers)
+            .Produces<OrderView>(200)
             .WithName("CancelOrder");
 
         return orders;
@@ -193,6 +210,7 @@ public static class StorefrontEndpoints
                 (await bus.InvokeAsync<Result<Page<OrderSummary>>>(
                     new ListOrders(status, page ?? 1, size ?? PageRequest.DefaultSize, sort, desc ?? true), ct).ConfigureAwait(false))
                 .ToHttpResult(Results.Ok))
+            .Produces<Page<OrderSummary>>(200)
             .WithName("ListOrders");
 
         // The audit trail is read straight through MP Core's IAuditQuery port: a read-only view of what
@@ -202,6 +220,7 @@ public static class StorefrontEndpoints
                 Results.Ok(await audit.QueryAsync(
                     new AuditQueryFilter { Module = module, EntityType = entityType, EntityId = entityId },
                     new AuditPageRequest(Math.Max(page ?? 1, 1), Math.Clamp(size ?? 50, 1, 200)), ct).ConfigureAwait(false)))
+            .Produces<AuditPage>(200)
             .WithName("QueryAuditTrail");
 
         // Translations of the failure messages, edited at run time (ADR-012 §5). A key must be one the code
@@ -209,16 +228,19 @@ public static class StorefrontEndpoints
         office.MapGet("/translations", static async (string? culture, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<IReadOnlyList<MessageTranslationEntry>>>(new ListTranslations(culture), ct).ConfigureAwait(false))
                 .ToHttpResult(Results.Ok))
+            .Produces<IReadOnlyList<MessageTranslationEntry>>(200)
             .WithName("ListTranslations");
 
         office.MapPut("/translations/{culture}/{key}", static async (string culture, string key, TranslationRequest request, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result<TranslationView>>(new SetTranslation(key, culture, request.Text), ct).ConfigureAwait(false))
                 .ToHttpResult(Results.Ok))
+            .Produces<TranslationView>(200)
             .WithName("SetTranslation");
 
         office.MapDelete("/translations/{culture}/{key}", static async (string culture, string key, IMessageBus bus, CancellationToken ct) =>
                 (await bus.InvokeAsync<Result>(new RemoveTranslation(key, culture), ct).ConfigureAwait(false))
                 .ToHttpResult())
+            .Produces(204)
             .WithName("RemoveTranslation");
 
         return office;

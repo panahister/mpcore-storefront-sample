@@ -60,6 +60,8 @@ public sealed partial class MessageCatalogTests
         Assert.Equal("A price may move by at most 50% in one step (from 1000.00 to 5000.00).", catalog.Localize(message, CultureInfo.GetCultureInfo("en")));
         // zh-Hans is the parent of zh-CN: the culture a transport negotiates for a caller who asks for zh-CN.
         Assert.Equal("价格单次最多只能变动 50%（从 1000.00 到 5000.00）。", catalog.Localize(message, CultureInfo.GetCultureInfo("zh-Hans")));
+        Assert.Equal("يمكن تغيير السعر بنسبة لا تتجاوز 50% في خطوة واحدة (من 1000.00 إلى 5000.00).", catalog.Localize(message, CultureInfo.GetCultureInfo("ar")));
+        Assert.Equal(catalog.Localize(message, CultureInfo.GetCultureInfo("ar")), catalog.Localize(message, CultureInfo.GetCultureInfo("ar-SA")));
     }
 
     [Fact]
@@ -97,17 +99,37 @@ public sealed partial class MessageCatalogTests
 
         foreach (var defaults in files)
         {
-            // Every file has a Chinese twin, and it translates exactly the default keys; so does any other.
+            // Preserve published Chinese and add Arabic; neither may silently fall back to English.
             var chinese = defaults[..^".resx".Length] + ".zh-Hans.resx";
+            var arabic = defaults[..^".resx".Length] + ".ar.resx";
             Assert.True(File.Exists(chinese), $"missing {chinese}");
+            Assert.True(File.Exists(arabic), $"missing {arabic}");
             var translations = Directory.EnumerateFiles(Path.GetDirectoryName(defaults)!, Path.GetFileNameWithoutExtension(defaults) + ".*.resx").ToList();
             Assert.Contains(chinese, translations);
             Assert.All(translations, translation => Assert.Equal(Keys(defaults), Keys(translation)));
+            var original = Texts(defaults);
+            foreach (var translation in translations)
+            {
+                foreach (var (key, text) in Texts(translation))
+                {
+                    Assert.False(string.IsNullOrWhiteSpace(text), $"empty {key} in {translation}");
+                    Assert.Equal(Arguments(original[key]), Arguments(text));
+                }
+            }
         }
     }
 
     private static List<string> Keys(string file) =>
         [.. XDocument.Load(file).Root!.Elements("data").Select(static data => (string)data.Attribute("name")!).Order(StringComparer.Ordinal)];
+
+    private static Dictionary<string, string> Texts(string file) => XDocument.Load(file).Root!.Elements("data")
+        .ToDictionary(static data => (string)data.Attribute("name")!, static data => data.Element("value")!.Value, StringComparer.Ordinal);
+
+    private static List<string> Arguments(string text) =>
+        [.. Placeholder().Matches(text).Select(static match => match.Groups[1].Value).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
+
+    [GeneratedRegex("\\{(\\w+)\\}")]
+    private static partial Regex Placeholder();
 
     [GeneratedRegex("\"((?:catalog|basket|ordering|payments|localization)\\.[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)*)\"")]
     private static partial Regex KeyLiteral();
