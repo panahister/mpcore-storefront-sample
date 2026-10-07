@@ -53,7 +53,7 @@ class under `Domain/Rules/`, checked by the aggregate or value object before it 
 rule answers the caller with the rule's code (HTTP 422). The shape of a request (required fields, lengths,
 formats) is checked by a validator before the handler runs and answers 400 with one violation per field.
 A query only reads: it lives in `Application/Queries/`, reads through a read-model port that returns views, and is
-the only thing an HTTP `GET` sends. Every failure message is a key, rendered in the caller's language (`Accept-Language: fa` or `en`); support
+the only thing an HTTP `GET` sends. Every failure message is a key, rendered in the caller's language (`Accept-Language: en`, `zh-CN`, or `ar`); support
 can change a text at run time (scenario S13).
 
 ## 4. Business rules
@@ -274,7 +274,7 @@ commerce/src/
     Hosting/DevelopmentSetup.cs       migrations and catalog seed in Development
     Hosting/GivenUpMessages.cs        what the order process is told when a step ends in the error queue
     Hosting/TranslationHandlers.cs    support edits message texts (commands, validators, failures)
-    Resources/HostMessages*.resx      the host's own message texts, English and Simplified Chinese
+    Resources/HostMessages*.resx      the host's own message texts, English, Simplified Chinese and Arabic
     Rest/Endpoints/StorefrontEndpoints.cs   every REST endpoint
     Grpc/Services/CommerceGrpcServices.cs   the gRPC services
     Protos/storefront_commerce.proto      the gRPC contract
@@ -293,7 +293,7 @@ commerce/src/
     Application/Events/               reactions to the module's own domain events (Catalog)
     Application/Validators/           FluentValidation validators, one per caller-facing command
     Infrastructure/                   EF mappings, repositories, read models, the DemoPay gateway, AddXModule
-    Resources/<Context>Messages.resx  message texts, English; <Context>Messages.zh-Hans.resx, Simplified Chinese
+    Resources/<Context>Messages.resx  English; `.zh-Hans.resx`, Simplified Chinese; `.ar.resx`, Arabic
   Modules/<Context>/Storefront.Commerce.Modules.<Context>.Contracts/  what other modules may use (Catalog, Basket, Payments):
                                       module messages, and one read-only interface, ICatalogLookup
 commerce/tests/Storefront.Commerce.Tests/

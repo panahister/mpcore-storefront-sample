@@ -35,7 +35,13 @@
       "name": "Storefront web shop (development)",
       "enabled": true,
       "publicClient": true,
-      "standardFlowEnabled": false,
+      "standardFlowEnabled": true,
+      "redirectUris": [
+        "http://localhost:4401/api/session/callback",
+        "http://localhost:4402/api/session/callback"
+      ],
+      "webOrigins": ["http://localhost:4401", "http://localhost:4402"],
+      "attributes": {"pkce.code.challenge.method": "S256"},
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
       "protocol": "openid-connect",

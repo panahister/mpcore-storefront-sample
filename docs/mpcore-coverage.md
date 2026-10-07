@@ -44,7 +44,7 @@ added with one package reference and one call, `options.UseMPCoreRabbitMq(...)`,
 | `MPCore.Messaging.Wolverine.RabbitMQ` | `UseMPCoreRabbitMq`; a durable route and a durable listener | Commerce `Api/Hosting/CommerceQueues.cs`; Fulfillment `Api/Hosting/FulfillmentQueues.cs`, `Api/Program.cs` |
 | `MPCore.Idempotency.EntityFrameworkCore.PostgreSql` | `AddMPCoreIdempotency`, `UseMPCoreIdempotency`, `ApplyMPCoreIdempotency` | `Infrastructure/DependencyInjection.cs`, `AppDbContext.cs`, in all three |
 | `MPCore.Validation.FluentValidation` | `UseMPCoreFluentValidation`, `AddMPCoreValidators` | `Api/Program.cs`; every `Application/Validators/*Validator.cs` |
-| `MPCore.Localization` | `AddMPCoreMessageCatalog`; resource files in English and Simplified Chinese | `Api/Program.cs`; every `Resources/*Messages.resx` and `.zh-Hans.resx` |
+| `MPCore.Localization` | `AddMPCoreMessageCatalog`; resource files in English, Simplified Chinese and Arabic | `Api/Program.cs`; every default, `.zh-Hans.resx` and `.ar.resx` resource |
 | `MPCore.Localization.EntityFrameworkCore.PostgreSql` | translations edited at run time | Commerce `Api/Hosting/TranslationHandlers.cs`, `/v1/backoffice/translations` |
 | `MPCore.Caching.Abstractions` | `IReadThroughCache.GetOrCreateAsync`, `ICache.RemoveAsync` | Commerce `Catalog/Application/Queries/GetProductDetails.cs`, `Catalog/Application/Events/ProductUpdatedHandler.cs`; Analytics `Application/Queries/SalesReports.cs` |
 | `MPCore.Caching.Hybrid` | `AddMPCoreHybridCache` | Commerce `Infrastructure/DependencyInjection.cs` |
@@ -79,7 +79,7 @@ it.
 | gRPC next to REST in one host, each on its own port | S9 | `grpcurl` against `:5101`, and against `:5100` |
 | 401, 403, and 404 instead of 403; input validation answers 400 before the handler runs | S11 | the Problem Details |
 | Events on Kafka, partitioned by order and by SKU | S12 | Kafka UI |
-| Messages in the caller's language; a text edited at run time | S13, S19 | `Accept-Language: fa` |
+| Messages in the caller's language; a text edited at run time | S13, S19 | `Accept-Language: zh-CN` or `ar` |
 | A request sent twice with one `Idempotency-Key` runs once and is answered twice | S14 | the header `Idempotency-Replayed: true`; table `idempotency.requests` |
 | A message published by an attempt whose save failed is never delivered | S15 | eight checkouts at once, one order, one charge |
 | Orders that collide on one row are retried apart from each other, and all come to an end | S16 | `Api/Program.cs`, the rule for `DbUpdateConcurrencyException` |

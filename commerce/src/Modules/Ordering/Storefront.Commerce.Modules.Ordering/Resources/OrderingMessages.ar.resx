@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ordering.buyer_required" xml:space="preserve">
+    <value>سجل الدخول لإنشاء الطلبات أو عرضها.</value>
+  </data>
+  <data name="ordering.order_not_found" xml:space="preserve">
+    <value>الطلب غير موجود.</value>
+  </data>
+  <data name="ordering.note_required" xml:space="preserve">
+    <value>يجب أن يقدم موظف الدعم سبباً للإلغاء.</value>
+  </data>
+  <data name="ordering.order_id_invalid" xml:space="preserve">
+    <value>معرف الطلب ليس بصيغة UUID صالحة.</value>
+  </data>
+  <data name="ordering.status_unknown" xml:space="preserve">
+    <value>حالة الطلب المحددة للتصفية غير معروفة.</value>
+  </data>
+  <data name="ordering.no_lines" xml:space="preserve">
+    <value>يجب أن يحتوي الطلب على بند واحد على الأقل.</value>
+  </data>
+  <data name="ordering.phone_invalid" xml:space="preserve">
+    <value>يجب أن يكون رقم الهاتف بصيغة دولية: علامة زائد ثم رمز الدولة ثم الرقم.</value>
+  </data>
+  <data name="ordering.postal_code_invalid" xml:space="preserve">
+    <value>يجب أن يتكون الرمز البريدي من 3 إلى 12 حرفاً أو رقماً.</value>
+  </data>
+  <data name="ordering.already_shipped" xml:space="preserve">
+    <value>تم شحن الطلب بالفعل ولا يمكن إلغاؤه.</value>
+  </data>
+  <data name="ordering.already_cancelled" xml:space="preserve">
+    <value>الطلب ملغى بالفعل.</value>
+  </data>
+  <data name="ordering.status_mismatch" xml:space="preserve">
+    <value>تتطلب هذه الخطوة أن تكون حالة الطلب {expected}؛ الحالة الحالية {actual}.</value>
+  </data>
+</root>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="localization.unknown_message_key" xml:space="preserve">
+    <value>المفتاح '{key}' ليس من مفاتيح الرسائل التي يستخدمها هذا النظام.</value>
+  </data>
+  <data name="localization.key_invalid" xml:space="preserve">
+    <value>يجب أن يتكون مفتاح الرسالة من أحرف صغيرة تفصل بينها نقاط.</value>
+  </data>
+  <data name="localization.culture_unknown" xml:space="preserve">
+    <value>الرمز '{culture}' ليس رمز لغة معروفاً.</value>
+  </data>
+  <data name="localization.translation_not_found" xml:space="preserve">
+    <value>لا توجد ترجمة مخزنة لهذا المفتاح بهذه اللغة.</value>
+  </data>
+</root>

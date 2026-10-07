@@ -48,6 +48,9 @@ jobs:
       - uses: actions/setup-dotnet@v6
         with:
           global-json-file: mpcore-storefront-sample/global.json
+      - name: Frontend authorization-code import contract
+        working-directory: mpcore-storefront-sample
+        run: bash scripts/verify-frontend-client.sh
       - name: Build and test (warnings are errors)
         working-directory: mpcore-storefront-sample
         run: |

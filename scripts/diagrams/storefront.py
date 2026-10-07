@@ -71,7 +71,7 @@ def system(d):
     d.arrow([(L + 443, y + h + 2), (L + 443, y + h + 30)], sw=1.8, both=True)
     d.arrow([(L + 601, y + h + 30), (L + 601, y + h + 2)], sw=1.8)
     gy = y + h + 42
-    d.group(L, gy, LW, 106, "amber", "MESSAGES  ·  NO SHARED CODE BETWEEN THE THREE")
+    d.group(L, gy, LW, 106, "cyan", "MESSAGES  ·  NO SHARED CODE BETWEEN THE THREE")
     d.tool(L + 16, gy + 22, 316, 70, "rabbitmq", "RabbitMQ", ["Commerce  →  order ready to ship  →  Fulfillment", "Commerce  ←  shipment dispatched  ←  Fulfillment"], "run", size=24)
     d.tool(L + 344, gy + 22, 316, 70, "apachekafka", "Apache Kafka", ["Commerce  →  order placed, paid, cancelled", "→  Analytics, from the start of the stream"], "run", size=24)
 
@@ -105,7 +105,7 @@ def journey(d):
         ("green", "Basket", "Checkout", ["The basket is emptied and", "announced. The answer is 202"], "One commit, with the message"),
         ("purple", "Ordering", "The order is created", ["From the message, under the", "identity the basket gave it"], "Inbox: handled once"),
         ("teal", "Payments", "The charge is registered", ["One payment per order;", "the intent is used once"], "A transaction of its own"),
-        ("amber", "Catalog", "The stock is reserved", ["All lines, or none. Twelve", "orders may want one product"], "Retry, with random pauses"),
+        ("cyan", "Catalog", "The stock is reserved", ["All lines, or none. Twelve", "orders may want one product"], "Retry, with random pauses"),
         ("teal", "Payments", "The card is charged", ["The provider may be slow,", "or down, or say no"], "Resilient HTTP client"),
         ("purple", "Ordering", "The order is paid", ["Told to the figures (Kafka) and", "to the warehouse (RabbitMQ)"], "Outbox: sent if committed"),
         ("rose", "Fulfillment", "The parcel leaves", ["Another service, over gRPC;", "the shop hears and ships"], "Two services, no shared code"),
@@ -135,7 +135,7 @@ def shop(d):
         ("purple", "Ordering", ["The order, its process"], "12 rules", ["No order waits for ever", "A late answer changes", "nothing"], "order paid", ["A process on messages", "Inbox: handled once", "A given-up request", "is answered"]),
         ("teal", "Payments", ["Intents, charges, refunds"], "8 rules", ["A decline is never", "retried; the card token", "stays in this module"], "payment registered", ["Retry, timeout and", "circuit breaker", "Charges audited", "Sent after the commit"]),
         ("rose", "Fulfillment", ["The warehouse"], "5 rules", ["A parcel leaves once", "Dispatch names the", "carrier and the code"], "parcel dispatched", ["gRPC, rich status", "Inbox: handled once", "Dispatch audited", "RabbitMQ both ways"]),
-        ("amber", "Analytics", ["The figures"], "6 rules", ["A fact counts once", "A report covers", "31 days at most"], "", ["Kafka, from the start", "A TimescaleDB", "hypertable", "Reports cached"]),
+        ("cyan", "Analytics", ["The figures"], "6 rules", ["A fact counts once", "A report covers", "31 days at most"], "", ["Kafka, from the start", "A TimescaleDB", "hypertable", "Reports cached"]),
     ]
     w, gx, x0, y0, h = 148, 10, 32, 110, 200
     d.group(x0 - 8, y0 - 18, 4 * w + 3 * gx + 16, h + 28, "green", "COMMERCE  ·  ONE PROCESS, FOUR MODULES, ONE SCHEMA EACH")

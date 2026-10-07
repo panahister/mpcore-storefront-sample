@@ -146,8 +146,8 @@ var anonymousDescriptionSurface = builder.Environment.IsDevelopment();
 builder.Services.AddHostHealthChecks();
 
 // The languages a caller may ask for, besides English. "zh-Hans" answers a caller who asks for "zh-CN":
-// MP Core accepts the requested culture or its parent.
-string[] languages = ["zh-Hans"];
+// MP Core accepts the requested culture or its parent; "ar" also serves regional Arabic callers.
+string[] languages = ["zh-Hans", "ar"];
 builder.Services.AddGrpc().AddMPCoreFailureHandling(options => { foreach (var language in languages) options.SupportedCultures.Add(language); });
 // The empty service name is the whole host; "live" asks the process only.
 builder.Services.AddGrpcHealthChecks(options =>
