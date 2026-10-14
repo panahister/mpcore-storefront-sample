@@ -69,7 +69,7 @@ decision is ADR-007: a gateway that validates is one more wall, never a replacem
 | Value | MP Core is |
 |---|---|
 | `NuGet` | the packages from nuget.org, version `1.0.0` |
-| `Local` | the source of a clone at `../mpcore`: a breakpoint in the framework works, and a change there is picked up by the next build |
+| `Local` | the source of a clone at `../mpcore`: a breakpoint in the framework works, and a change there is picked up by the next build. Run `./eng/restore-api-baseline.sh` in that clone once first: a build of MP Core's source needs its API baseline, or stops with `MPCORE0005` |
 
 ```bash
 dotnet build commerce/Storefront.Commerce.Backend.sln -p:MPCoreSource=NuGet

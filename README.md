@@ -239,7 +239,9 @@ Contracts 8). See [the running guide](docs/running.md) for the reproducible comm
 From nuget.org, version `1.0.0`. When a clone of MP Core sits next to this repository (`../mpcore`), the
 backends build against its source instead: a breakpoint in framework code works, and a change there is
 picked up by the next build. [`Directory.Build.targets`](Directory.Build.targets) decides, and says so in
-the build output. To choose for one build:
+the build output. A build of MP Core's source needs the API baseline of its last published version: run
+`./eng/restore-api-baseline.sh` in that clone once, and again when its baseline moves, or the build stops with
+`MPCORE0005` (MP Core's ADR-010, addendum of 2026-10-12). To choose for one build:
 
 ```bash
 dotnet build commerce/Storefront.Commerce.Backend.sln -p:MPCoreSource=NuGet
