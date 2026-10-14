@@ -151,8 +151,8 @@ whole-platform Arabic coverage.
 
 Run `dotnet test commerce/Storefront.Commerce.Backend.sln --configuration Release -p:MPCoreSource=NuGet`
 to verify the standalone package-based sample, rather than implicitly selecting a sibling MP Core clone.
-The 2026-10-08 publication run passed Commerce 241, Fulfillment 19, Analytics 22 and Contracts 8
-(290 total), with zero build warnings and zero build errors. Run each service's solution and the root
+The 2026-10-14 run against MP Core 1.0.0 from nuget.org, with an empty package cache, passed Commerce 241,
+Fulfillment 19, Analytics 22 and Contracts 8 (290 total), with zero build warnings and zero build errors. Run each service's solution and the root
 contract project with the same Release/NuGet arguments. The missing-Arabic regressions were first seen
 failing. This is local evidence, not remote CI or full production acceptance.
 

@@ -108,7 +108,7 @@ decision, a name. What makes it safe is MP Core's, and it is the same in all thr
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/why-mpcore-dark.svg">
-  <img alt="Nine guarantees the shop needs. For each, what a team builds and proves without MP Core, the line Storefront wrote with MP Core, and the scenario that proves it; and the code counted: 2,753 lines of Storefront business against 4,970 lines in MP Core's 28 packages" src="docs/images/why-mpcore-light.svg" width="100%">
+  <img alt="Nine guarantees the shop needs. For each, what a team builds and proves without MP Core, the line Storefront wrote with MP Core, and the scenario that proves it; and the code counted: 2,753 lines of Storefront business against 6,482 lines in MP Core 1.0.0's 28 packages" src="docs/images/why-mpcore-light.svg" width="100%">
 </picture>
 
 A shop is judged on its bad days, and the guarantees for those days are the same in every shop: a checkout
@@ -123,8 +123,8 @@ names.
 
 **How the code was counted.** Lines of C# that are neither blank, nor comments, nor a brace alone;
 migrations, `bin` and `obj` left out. Storefront: the `Domain` and `Application` projects and folders of the
-three backends. MP Core: the `src` of its 28 runtime packages at `0.9.1`; its tests are another 6,747
-lines, 460 tests, run against PostgreSQL, TimescaleDB and Redis. A count of lines says how much there is,
+three backends. MP Core: the `src` of its 28 runtime packages at `1.0.0`; its tests are another 12,481
+lines, 845 tests, run against PostgreSQL, TimescaleDB, Redis, RabbitMQ and Kafka. A count of lines says how much there is,
 not what it guarantees; what it guarantees is in the column of scenarios.
 
 ### What the sample's code does, and what MP Core does
@@ -230,13 +230,13 @@ The tests and the scenarios run on GitHub on every change to this repository.
 [docs/lessons.md](docs/lessons.md) lists what they found: defects in MP Core, which were fixed in MP Core,
 and mistakes in this sample's own design, which are the ones a team is most likely to repeat.
 
-For the current publication candidate, a 2026-10-08 Release build against MP Core packages completed
-with zero warnings and zero errors; all 290 tests passed (Commerce 241, Fulfillment 19, Analytics 22,
+On 2026-10-14, a Release build against the MP Core 1.0.0 packages from nuget.org, with an empty package cache,
+completed with zero warnings and zero errors; all 290 tests passed (Commerce 241, Fulfillment 19, Analytics 22,
 Contracts 8). See [the running guide](docs/running.md) for the reproducible command and scope.
 
 ## Where MP Core comes from
 
-From nuget.org, version `0.9.1`. When a clone of MP Core sits next to this repository (`../mpcore`), the
+From nuget.org, version `1.0.0`. When a clone of MP Core sits next to this repository (`../mpcore`), the
 backends build against its source instead: a breakpoint in framework code works, and a change there is
 picked up by the next build. [`Directory.Build.targets`](Directory.Build.targets) decides, and says so in
 the build output. To choose for one build:
